@@ -1,0 +1,8 @@
+[requires]
+stb/cci.20240531
+glm/1.0.1
+[generators]
+CMakeDeps
+CMakeToolchain
+[layout]
+cmake_layout

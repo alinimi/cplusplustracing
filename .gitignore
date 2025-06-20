@@ -1,0 +1,9 @@
+
+# CMake build directories
+/build/
+
+# VSCode settings
+.vscode/
+
+# Output files
+*.hdr
