@@ -4,8 +4,8 @@
 #include <stb_image_write.h>
 #include <glm/glm.hpp>
 #include "ecs/ECS.h"
-#include "ray.h"
-#include "hittable.h"
+#include "geometry/ray.h"
+#include "geometry/hittable.h"
 #include "render_system.h"
 
 render::Camera create_camera() {
@@ -76,7 +76,8 @@ int main() {
 
     Entity firstSphere = ecs.createEntity();
     ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.},{0.5} });
-
+    Entity ground = ecs.createEntity();
+    ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.},{100.} });
 
     const int channels = 3; // RGB
 
@@ -86,7 +87,7 @@ int main() {
 
 
     // Write to HDR file using stb_image_write
-    if (stbi_write_hdr("dummy.hdr", cam.width, cam.height, channels, image.data())) {
+    if (stbi_write_hdr("../../dummy.hdr", cam.width, cam.height, channels, image.data())) {
         std::clog << "Saved dummy.hdr successfully!" << std::endl;
     }
     else {

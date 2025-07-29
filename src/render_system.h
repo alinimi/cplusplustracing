@@ -4,7 +4,10 @@
 #include <optional>
 #include "camera.h"
 #include "ecs/ECS.h"
-#include "hittable.h"
+#include "geometry/hittable.h"
+#include "geometry/hit_record.h"
+#include "geometry/interval.h"
+
 namespace render {
 
 
@@ -12,8 +15,8 @@ namespace render {
 
     class RenderSystem :public System {
     public:
-        color ray_color(ECS& ecs, const Ray& r, double ray_tmin, double ray_tmax) ;
-        std::optional<HitRecord> hit_sphere(const Sphere& sphere, const Ray& r,double ray_tmin, double ray_tmax);
+        color ray_color(ECS& ecs, const Ray& r, Interval ray_t);
+        std::optional<HitRecord> hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t);
         std::vector<float> render(ECS& ecs, const Camera& cam);
 
     private:
