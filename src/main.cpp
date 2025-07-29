@@ -3,28 +3,12 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 #include <glm/glm.hpp>
+#include "ecs/ECS.h"
 #include "ray.h"
+#include "hittable.h"
+#include "render_system.h"
 
-
-using point3 = glm::dvec3;
-using color = glm::dvec3;
-using vec3 = glm::dvec3;
-
-struct Camera {
-    int width, height;
-    vec3 camera_center; // Center of the camera
-    vec3 pixel_00_loc; // Location of the upper left pixel
-    vec3 pixel_delta_u; // Delta vector across the horizontal viewport edge
-    vec3 pixel_delta_v; // Delta vector down the vertical viewport edge
-    Ray camera_ray(int i, int j) {
-        auto pixel_center = pixel_00_loc + (double(i) * pixel_delta_u) + (double(j) * pixel_delta_v);
-        auto ray_direction = pixel_center - camera_center;
-        return Ray(camera_center, ray_direction);
-    } // Ray from the camera center through the pixel center
-};
-
-
-Camera create_camera() {
+render::Camera create_camera() {
     auto aspect_ratio = 16.0 / 9.0;
     int image_width = 400;
 
@@ -37,7 +21,7 @@ Camera create_camera() {
 
     auto focal_length = 1.0;
     auto viewport_height = 2.0;
-    auto viewport_width = viewport_height * (float(image_width) / image_height);
+    auto viewport_width = viewport_height * (double(image_width) / image_height);
     auto camera_center = point3(0, 0, 0);
 
     // Calculate the vectors across the horizontal and down the vertical viewport edges.
@@ -54,7 +38,7 @@ Camera create_camera() {
     auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
 
-    Camera cam;
+    render::Camera cam;
     cam.width = image_width;
     cam.height = image_height;
     cam.camera_center = camera_center;
@@ -65,34 +49,45 @@ Camera create_camera() {
 }
 
 
-color ray_color(const Ray& r) {
-    vec3 unit_direction = glm::normalize(r.getDirection()); // Normalize the ray direction
-    auto a = 0.5*(unit_direction.y + 1.0);
-    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
-}
-
 int main() {
+    ECS ecs;
+
+
+
+
+    ecs.registerComponent<render::Sphere>();
+    std::shared_ptr<render::RenderSystem> renderSystem = ecs.registerSystem<render::RenderSystem>();
+
+    Signature renderSignature;
+    renderSignature.set(ecs.getComponentType<render::Sphere>());
+    ecs.setSystemSignature<render::RenderSystem>(renderSignature);
+
+
+    // Signature signature;
+    // signature.set(gCoordinator.GetComponentType<Gravity>());
+    // signature.set(gCoordinator.GetComponentType<RigidBody>());
+    // signature.set(gCoordinator.GetComponentType<Transform>());
+    // gCoordinator.SetSystemSignature<PhysicsSystem>(signature);
+
+    // std::vector<Entity> entities(MAX_ENTITIES);
+
+
+    EntityManager entityManager;
+
+    Entity firstSphere = ecs.createEntity();
+    ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.},{0.5} });
+
+
     const int channels = 3; // RGB
 
-    Camera cam = create_camera();
-    std::vector<float> image(cam.width * cam.height * channels);
-    for (int y = 0; y < cam.height; ++y) {
-        std::cout << "Scanlines remaining " << (cam.height - y) << std::endl;
-        for (int x = 0; x < cam.width; ++x) {
-            Ray r = cam.camera_ray(x, y);
-            int idx = (y * cam.width + x) * channels;
-            color pixel_color = ray_color(r);
-            image[idx + 0] = pixel_color.x;   // R
-            image[idx + 1] = pixel_color.y;   // G
-            image[idx + 2] = pixel_color.z;   // B
-        }
-    }
-    std::cout << "Image data created successfully!" << std::endl;
+    render::Camera cam = create_camera();
+    auto image = renderSystem->render(ecs, cam);
+    std::clog << "Image data created successfully!" << std::endl;
 
 
     // Write to HDR file using stb_image_write
     if (stbi_write_hdr("dummy.hdr", cam.width, cam.height, channels, image.data())) {
-        std::cout << "Saved dummy.hdr successfully!" << std::endl;
+        std::clog << "Saved dummy.hdr successfully!" << std::endl;
     }
     else {
         std::cerr << "Failed to save dummy.hdr!" << std::endl;

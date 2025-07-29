@@ -1,28 +1,33 @@
-# ifndef RAY_H
-# define RAY_H
-#include <glm/glm.hpp>
-using point3 = glm::dvec3;
-using color = glm::dvec3;
-using vec3 = glm::dvec3;
+#ifndef RAY_H
+#define RAY_H
 
 
-class Ray {
-public:
-    Ray() = default; // Default constructor
-    Ray(const vec3& origin, const vec3& direction)
-        : origin(origin), direction(direction) {
-    }
+#include "common.h"
 
-    const vec3& getOrigin() const {
-        return origin;
-    }
 
-    const vec3& getDirection() const {
-        return direction;
-    }
+namespace render {
 
-private:
-    vec3 origin;  // Ray origin
-    vec3 direction; // Ray direction
-};
+
+
+    class Ray {
+    public:
+        Ray() {}
+
+        Ray(const point3& origin, const vec3& direction) : orig(origin), dir(direction) {}
+
+        const point3& origin() const { return orig; }
+        const vec3& direction() const { return dir; }
+
+        point3 at(double t) const {
+            return orig + t * dir;
+        }
+
+    private:
+        point3 orig;
+        vec3 dir;
+    };
+
+
+}
+
 #endif // RAY_H
