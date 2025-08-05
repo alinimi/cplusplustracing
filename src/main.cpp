@@ -76,8 +76,8 @@ int main() {
 
     Entity firstSphere = ecs.createEntity();
     ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.},{0.5} });
-    Entity ground = ecs.createEntity();
-    ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.},{100.} });
+    // Entity ground = ecs.createEntity();
+    // ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.},{100.} });
 
     const int channels = 3; // RGB
 
