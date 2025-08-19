@@ -1,8 +1,9 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
+#include <iostream>
 #include "render_system.h"
 #include "camera.h"
-#include <iostream>
+#include "geometry/interval.h"
 
 namespace render {
 
@@ -42,13 +43,13 @@ namespace render {
 		for (auto const& entity : entities)
 		{
 			auto& sphere = ecs.getComponent<Sphere>(entity);
-			auto hit = hit_sphere(sphere, r, Interval(ray_t.min,closest_so_far));
+			auto hit = hit_sphere(sphere, r, Interval(ray_t.min, closest_so_far));
 			if (hit.has_value() && hit->t < closest_so_far) {
 				closest_hit = hit;
 				closest_so_far = hit->t;
 			}
 		}
-		if(closest_hit.has_value()){
+		if (closest_hit.has_value()) {
 			return(0.5 * (closest_hit->normal + color(1., 1., 1.)));
 		}
 
@@ -64,16 +65,18 @@ namespace render {
 
 		for (int y = 0; y < cam.height; ++y) {
 			for (int x = 0; x < cam.width; ++x) {
-				Ray r = cam.camera_ray(x, y);
+				color pixel_color = color(0., 0., 0.);
+				for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
+					Ray r = cam.get_ray(x, y);
 
+					pixel_color += ray_color(ecs, r, Interval(0., infinity));
+				}
+				pixel_color /= cam.samples_per_pixel;
+				Interval intensity(0., 1.);
 				int idx = (y * cam.width + x) * m_channels;
-				color pixel_color = ray_color(ecs, r, Interval(0., infinity));
-				image[idx + 0] = pixel_color.x;   // R
-				image[idx+ 1] = pixel_color.y;   // G
-				image[idx + 2] = pixel_color.z;   // B
-				int ir = int(255.999 * pixel_color.x);
-				int ig = int(255.999 * pixel_color.y);
-				int ib = int(255.999 * pixel_color.z);
+				image[idx + 0] = intensity.clamp(pixel_color.x);   // R
+				image[idx + 1] = intensity.clamp(pixel_color.y);   // G
+				image[idx + 2] = intensity.clamp(pixel_color.z);   // B
 
 			}
 		}return image;

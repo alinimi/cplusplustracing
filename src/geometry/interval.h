@@ -1,6 +1,8 @@
 #ifndef INTERVAL_H
 #define INTERVAL_H
 
+
+#include <algorithm>
 #include "../common.h"
 
 namespace render {
@@ -20,6 +22,9 @@ namespace render {
         }
         constexpr bool surrounds(double x) const {
             return x<max && x >min;
+        }
+        constexpr double clamp(double x) const {
+            return std::clamp<double>(x,min,max);
         }
         static const Interval empty, universe;
 

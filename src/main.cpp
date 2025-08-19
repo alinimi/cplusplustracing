@@ -9,33 +9,34 @@
 #include "render_system.h"
 
 render::Camera create_camera() {
-    auto aspect_ratio = 16.0 / 9.0;
-    int image_width = 400;
+    constexpr auto aspect_ratio = 16.0 / 9.0;
+    constexpr int image_width = 400;
 
     // Calculate the image height, and ensure that it's at least 1.
-    int image_height = int(image_width / aspect_ratio);
-    image_height = (image_height < 1) ? 1 : image_height;
+    constexpr int image_height = std::max<int>(image_width / aspect_ratio, 1);
+
+    // image_height = (image_height < 1) ? 1 : image_height;
 
 
     // Camera
 
-    auto focal_length = 1.0;
-    auto viewport_height = 2.0;
-    auto viewport_width = viewport_height * (double(image_width) / image_height);
-    auto camera_center = point3(0, 0, 0);
+    constexpr auto focal_length = 1.0;
+    constexpr auto viewport_height = 2.0;
+    constexpr auto viewport_width = viewport_height * (double(image_width) / image_height);
+    constexpr auto camera_center = point3(0, 0, 0);
 
     // Calculate the vectors across the horizontal and down the vertical viewport edges.
-    auto viewport_u = vec3(viewport_width, 0, 0);
-    auto viewport_v = vec3(0, -viewport_height, 0);
+    constexpr auto viewport_u = vec3(viewport_width, 0, 0);
+    constexpr auto viewport_v = vec3(0, -viewport_height, 0);
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-    auto pixel_delta_u = viewport_u * (1.0 / image_width);
-    auto pixel_delta_v = viewport_v * (1.0 / image_height);
+    constexpr auto pixel_delta_u = viewport_u * (1.0 / image_width);
+    constexpr auto pixel_delta_v = viewport_v * (1.0 / image_height);
 
     // Calculate the location of the upper left pixel.
-    auto viewport_upper_left = camera_center
+    constexpr auto viewport_upper_left = camera_center
         - vec3(0, 0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
-    auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+    constexpr auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
 
     render::Camera cam;
@@ -74,15 +75,15 @@ int main() {
 
     EntityManager entityManager;
 
-    Entity firstSphere = ecs.createEntity();
+    const Entity firstSphere = ecs.createEntity();
     ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.},{0.5} });
-    // Entity ground = ecs.createEntity();
-    // ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.},{100.} });
+    const Entity ground = ecs.createEntity();
+    ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.},{100.} });
 
     const int channels = 3; // RGB
 
     render::Camera cam = create_camera();
-    auto image = renderSystem->render(ecs, cam);
+    const auto image = renderSystem->render(ecs, cam);
     std::clog << "Image data created successfully!" << std::endl;
 
 
