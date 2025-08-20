@@ -15,8 +15,9 @@ namespace render {
 
     class RenderSystem :public System {
     public:
-        color ray_color(ECS& ecs, const Ray& r, Interval ray_t);
         std::optional<HitRecord> hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t);
+        std::optional<HitRecord> hit(ECS& ecs, const Ray& r, Interval ray_t);
+        color ray_color(ECS& ecs, const Ray& r, int depth);
         std::vector<float> render(ECS& ecs, const Camera& cam);
 
     private:

@@ -1,5 +1,4 @@
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/norm.hpp>
+#include "common.h"
 #include <iostream>
 #include "render_system.h"
 #include "camera.h"
@@ -35,9 +34,7 @@ namespace render {
 		return HitRecord{ rec_t,point,sphere.normal(point),r };
 	}
 
-
-
-	color RenderSystem::ray_color(ECS& ecs, const Ray& r, Interval ray_t) {
+	std::optional<HitRecord> RenderSystem::hit(ECS& ecs, const Ray& r, Interval ray_t) {
 		std::optional<HitRecord> closest_hit;
 		auto closest_so_far = ray_t.max;
 		for (auto const& entity : entities)
@@ -49,8 +46,20 @@ namespace render {
 				closest_so_far = hit->t;
 			}
 		}
+		return closest_hit;
+
+	}
+
+
+
+	color RenderSystem::ray_color(ECS& ecs, const Ray& r, int depth) {
+		if (depth < 0) {
+			return color(0., 0., 0.);
+		}
+		std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
 		if (closest_hit.has_value()) {
-			return(0.5 * (closest_hit->normal + color(1., 1., 1.)));
+			vec3 direction = closest_hit->normal + random_unit_vector();
+			return 0.5 * ray_color(ecs, Ray(closest_hit->p + 1e-8 * closest_hit->normal, direction), depth - 1);
 		}
 
 		auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
@@ -61,15 +70,13 @@ namespace render {
 	std::vector<float> RenderSystem::render(ECS& ecs, const Camera& cam) {
 		std::vector<float> image(cam.width * cam.height * m_channels);
 
-
-
 		for (int y = 0; y < cam.height; ++y) {
 			for (int x = 0; x < cam.width; ++x) {
 				color pixel_color = color(0., 0., 0.);
 				for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
 					Ray r = cam.get_ray(x, y);
 
-					pixel_color += ray_color(ecs, r, Interval(0., infinity));
+					pixel_color += ray_color(ecs, r, cam.max_depth);
 				}
 				pixel_color /= cam.samples_per_pixel;
 				Interval intensity(0., 1.);
