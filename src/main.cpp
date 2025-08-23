@@ -6,6 +6,7 @@
 #include "ecs/ECS.h"
 #include "geometry/ray.h"
 #include "geometry/hittable.h"
+#include "material/material.h"
 #include "render_system.h"
 
 render::Camera create_camera() {
@@ -57,10 +58,14 @@ int main() {
 
 
     ecs.registerComponent<render::Sphere>();
+    // ecs.registerComponent<render::Material>();
+
     std::shared_ptr<render::RenderSystem> renderSystem = ecs.registerSystem<render::RenderSystem>();
 
     Signature renderSignature;
     renderSignature.set(ecs.getComponentType<render::Sphere>());
+    // renderSignature.set(ecs.getComponentType<render::Material>());
+
     ecs.setSystemSignature<render::RenderSystem>(renderSignature);
 
 
@@ -77,13 +82,16 @@ int main() {
 
     const Entity firstSphere = ecs.createEntity();
     ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.},{0.5} });
+    // ecs.addComponent(firstSphere, render::Material{ {0.,0.,-1.},{0.5} });
+
     const Entity ground = ecs.createEntity();
     ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.},{100.} });
+    // ecs.addComponent(firstSphere, render::Material{ {0.,0.,-1.},{0.5} });
 
     const int channels = 3; // RGB
 
     render::Camera cam = create_camera();
-    const auto image = renderSystem->render(ecs, cam);
+    const auto image = renderSystem->render_ecs(ecs, cam);
     std::clog << "Image data created successfully!" << std::endl;
 
 
