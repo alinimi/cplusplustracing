@@ -48,4 +48,13 @@ inline vec3 random_on_hemisphere(vec3 n) {
     return unit_vector;
 }
 
+inline vec3 reflect(const vec3 v, const vec3 n) {
+    return v - 2 * dot(v, n) * n;
+}
+
+inline bool near_zero(vec3 n) {
+    auto s = 1e-8;
+    return (std::fabs(n.x) < s) && (std::fabs(n.y) < s) && (std::fabs(n.z) < s);
+}
+
 #endif // COMMON_H

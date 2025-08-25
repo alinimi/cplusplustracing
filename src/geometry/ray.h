@@ -11,16 +11,34 @@ namespace render {
 
     class Ray {
     public:
-        constexpr Ray(const point3 origin, const vec3 direction) : origin(origin), direction(direction), attenuation(0.,0.,0.), index(-1), depth(-1) {}
+        constexpr Ray(
+            const point3 origin,
+            const vec3 direction,
+            const color attenuation,
+            const int index,
+            const int depth
+        ) :
+            origin(origin), direction(direction), attenuation(attenuation), index(index), depth(depth)
+        {
+        }
+
+        constexpr Ray scattered(
+            const point3 new_origin,
+            const vec3 new_direction,
+            const color new_attenuation
+        ) const
+        {
+            return Ray(new_origin, new_direction, attenuation * new_attenuation, index, depth - 1);
+        }
 
         constexpr point3 at(double t) const {
             return origin + t * direction;
         }
         const point3 origin;
         const vec3 direction;
-        color attenuation;
-        int index;
-        int depth;
+        const color attenuation;
+        const int index;
+        const int depth;
     };
 
 

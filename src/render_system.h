@@ -15,12 +15,12 @@ namespace render {
 
     class RenderSystem :public System {
     public:
-        std::optional<HitRecord> hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t);
-        std::optional<HitRecord> hit(ECS& ecs, const Ray& r, Interval ray_t);
-        std::optional<color> scatter(const Ray& r, const HitRecord& hit);
-        color ray_color(ECS& ecs, const Ray& r, int depth);
-        std::vector<float> render(ECS& ecs, const Camera& cam);
-        std::vector<float> render_ecs(ECS& ecs, const Camera& cam);
+        std::optional<HitRecord> hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t) const;
+        std::optional<HitRecord> hit(ECS& ecs, const Ray& r, Interval ray_t) const;
+        std::optional<Ray> scatter_lambertian(const Material& mat, const Ray& r, const HitRecord& rec) const;
+        std::optional<Ray> scatter_metallic(const Material& mat, const Ray& r, const HitRecord& rec) const;
+        std::optional<Ray> scatter(ECS& ecs, const Ray& r, const HitRecord& rec) const;
+        std::vector<float> render_ecs(ECS& ecs, const Camera& cam) const;
 
     private:
         int m_channels = 3; // Number of color channels (R, G, B)

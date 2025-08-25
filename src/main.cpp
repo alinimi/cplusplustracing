@@ -58,13 +58,13 @@ int main() {
 
 
     ecs.registerComponent<render::Sphere>();
-    // ecs.registerComponent<render::Material>();
+    ecs.registerComponent<render::Material>();
 
     std::shared_ptr<render::RenderSystem> renderSystem = ecs.registerSystem<render::RenderSystem>();
 
     Signature renderSignature;
     renderSignature.set(ecs.getComponentType<render::Sphere>());
-    // renderSignature.set(ecs.getComponentType<render::Material>());
+    renderSignature.set(ecs.getComponentType<render::Material>());
 
     ecs.setSystemSignature<render::RenderSystem>(renderSignature);
 
@@ -81,12 +81,21 @@ int main() {
     EntityManager entityManager;
 
     const Entity firstSphere = ecs.createEntity();
-    ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.},{0.5} });
-    // ecs.addComponent(firstSphere, render::Material{ {0.,0.,-1.},{0.5} });
+    ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.2}, {0.5} });
+    ecs.addComponent(firstSphere, render::Material{ {0.1,0.2,0.5}, 0. });
 
     const Entity ground = ecs.createEntity();
-    ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.},{100.} });
-    // ecs.addComponent(firstSphere, render::Material{ {0.,0.,-1.},{0.5} });
+    ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.}, {100.} });
+    ecs.addComponent(ground, render::Material{ {0.8,0.8,0.}, 0. });
+
+    const Entity leftSphere = ecs.createEntity();
+    ecs.addComponent(leftSphere, render::Sphere{ {-1.,0.,-1.}, {0.5} });
+    ecs.addComponent(leftSphere, render::Material{ {0.8, 0.8, 0.8}, 1. });
+
+    const Entity rightSphere = ecs.createEntity();
+    ecs.addComponent(rightSphere, render::Sphere{ {1.,0.,-1.}, {0.5} });
+    ecs.addComponent(rightSphere, render::Material{ {0.8, 0.6, 0.2}, 1. });
+
 
     const int channels = 3; // RGB
 

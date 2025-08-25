@@ -51,8 +51,8 @@ public:
         if (m_entityToIndex.find(entity) != m_entityToIndex.end()) {
             removeData(entity);
         }
-
     }
+
 private:
     std::array<T, MAX_ENTITIES> m_componentArray; // Array of components
     std::unordered_map<Entity, size_t> m_entityToIndex; // Maps index to entity

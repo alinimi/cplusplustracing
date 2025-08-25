@@ -7,6 +7,8 @@
 #include "component.h"
 #include "system.h"
 
+// TODO: Create const getters for read-only systems
+
 class ECS {
 public:
     ECS() : m_entityManager(), m_componentManager(), m_systemManager() {};
@@ -43,6 +45,10 @@ public:
     }
     template <typename T>
     T& getComponent(Entity entity) {
+        return m_componentManager.getComponent<T>(entity);
+    }
+    template <typename T>
+    const T& getComponent(Entity entity) const {
         return m_componentManager.getComponent<T>(entity);
     }
     template <typename T>
