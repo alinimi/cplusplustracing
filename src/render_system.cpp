@@ -47,6 +47,10 @@ namespace render {
 
 	std::optional<Ray> RenderSystem::scatter_metallic(const Material& mat, const Ray& r, const HitRecord& rec) const {
 		vec3 reflected = reflect(r.direction, rec.normal);
+		reflected = glm::normalize(reflected) + (mat.fuzz * random_unit_vector());
+		if (glm::dot(reflected, rec.normal) < 0) {
+			return {};
+		}
 		const auto scattered = r.scattered(rec.p + rec.normal * 1e-8, reflected, mat.albedo);
 		return scattered;
 	}

@@ -90,11 +90,11 @@ int main() {
 
     const Entity leftSphere = ecs.createEntity();
     ecs.addComponent(leftSphere, render::Sphere{ {-1.,0.,-1.}, {0.5} });
-    ecs.addComponent(leftSphere, render::Material{ {0.8, 0.8, 0.8}, 1. });
+    ecs.addComponent(leftSphere, render::Material{ {0.8, 0.8, 0.8}, 1., 0.3 });
 
     const Entity rightSphere = ecs.createEntity();
     ecs.addComponent(rightSphere, render::Sphere{ {1.,0.,-1.}, {0.5} });
-    ecs.addComponent(rightSphere, render::Material{ {0.8, 0.6, 0.2}, 1. });
+    ecs.addComponent(rightSphere, render::Material{ {0.8, 0.6, 0.2}, 1. , 1. });
 
 
     const int channels = 3; // RGB
