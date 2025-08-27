@@ -28,7 +28,7 @@ namespace render {
             const color new_attenuation
         ) const
         {
-            return Ray(new_origin, new_direction, attenuation * new_attenuation, index, depth - 1);
+            return Ray(new_origin, new_direction, new_attenuation, index, depth - 1);
         }
 
         constexpr point3 at(double t) const {

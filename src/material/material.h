@@ -7,7 +7,9 @@ namespace render {
   struct Material {
     color albedo;
     double metallic;
+    double dielectric;
     double fuzz = 0.;
+    double refraction_index = 1.;
   };
 
 }

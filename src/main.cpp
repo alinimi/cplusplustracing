@@ -82,19 +82,23 @@ int main() {
 
     const Entity firstSphere = ecs.createEntity();
     ecs.addComponent(firstSphere, render::Sphere{ {0.,0.,-1.2}, {0.5} });
-    ecs.addComponent(firstSphere, render::Material{ {0.1,0.2,0.5}, 0. });
+    ecs.addComponent(firstSphere, render::Material{ {0.1,0.2,0.5}, 0., 0. });
 
     const Entity ground = ecs.createEntity();
     ecs.addComponent(ground, render::Sphere{ {0.,-100.5,-1.}, {100.} });
-    ecs.addComponent(ground, render::Material{ {0.8,0.8,0.}, 0. });
+    ecs.addComponent(ground, render::Material{ {0.8,0.8,0.}, 0., 0. });
 
     const Entity leftSphere = ecs.createEntity();
     ecs.addComponent(leftSphere, render::Sphere{ {-1.,0.,-1.}, {0.5} });
-    ecs.addComponent(leftSphere, render::Material{ {0.8, 0.8, 0.8}, 1., 0.3 });
+    ecs.addComponent(leftSphere, render::Material{ {0.2, 0.2, 0.2}, 0., 1., 0.,1./1.33 });
+
+    // const Entity insideSphere = ecs.createEntity();
+    // ecs.addComponent(insideSphere, render::Sphere{ {-1.,0.,-1.}, {0.4} });
+    // ecs.addComponent(insideSphere, render::Material{ {0.8, 0.8, 0.8}, 0., 1., 0., 1. / 1.5 });
 
     const Entity rightSphere = ecs.createEntity();
     ecs.addComponent(rightSphere, render::Sphere{ {1.,0.,-1.}, {0.5} });
-    ecs.addComponent(rightSphere, render::Material{ {0.8, 0.6, 0.2}, 1. , 1. });
+    ecs.addComponent(rightSphere, render::Material{ {0.8, 0.6, 0.2}, 1. , 0., 1. });
 
 
     const int channels = 3; // RGB

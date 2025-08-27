@@ -19,6 +19,7 @@ namespace render {
         std::optional<HitRecord> hit(ECS& ecs, const Ray& r, Interval ray_t) const;
         std::optional<Ray> scatter_lambertian(const Material& mat, const Ray& r, const HitRecord& rec) const;
         std::optional<Ray> scatter_metallic(const Material& mat, const Ray& r, const HitRecord& rec) const;
+        std::optional<Ray> scatter_dielectric(const Material& mat, const Ray& r, const HitRecord& rec) const;
         std::optional<Ray> scatter(ECS& ecs, const Ray& r, const HitRecord& rec) const;
         std::vector<float> render_ecs(ECS& ecs, const Camera& cam) const;
 

@@ -41,8 +41,7 @@ namespace render {
 		if (near_zero(scatter_direction)) {
 			scatter_direction = rec.normal;
 		}
-		const auto scattered = r.scattered(rec.p + rec.normal * 1e-8, scatter_direction, mat.albedo);
-		return scattered;
+		return r.scattered(offset(rec.p,scatter_direction,1e-3), scatter_direction, r.attenuation * mat.albedo);
 	}
 
 	std::optional<Ray> RenderSystem::scatter_metallic(const Material& mat, const Ray& r, const HitRecord& rec) const {
@@ -51,22 +50,41 @@ namespace render {
 		if (glm::dot(reflected, rec.normal) < 0) {
 			return {};
 		}
-		const auto scattered = r.scattered(rec.p + rec.normal * 1e-8, reflected, mat.albedo);
-		return scattered;
+		return r.scattered(offset(rec.p,reflected,1e-3), reflected, r.attenuation * mat.albedo);
 	}
 
+	std::optional<Ray> RenderSystem::scatter_dielectric(const Material& mat, const Ray& r, const HitRecord& rec) const {
+		double cos_theta = std::fmin(glm::dot(-glm::normalize(r.direction), rec.normal), 1.0);
+		double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
+		const double ri = rec.front_face ? (1.0 / mat.refraction_index) : mat.refraction_index;
+		vec3 direction;
+		vec3 p;
+		if (ri * sin_theta > 1. || reflectance(cos_theta, ri) > random_double()) {
+			direction = reflect(r.direction, rec.normal);
+			p = offset(rec.p,direction,1e-3);
+		}
+		else {
+			direction = refract(glm::normalize(r.direction), rec.normal, ri);
+			p = offset(rec.p,direction,1e-3);//rec.p - rec.normal * 1e-5;
+		}
+
+		return r.scattered(p, direction, r.attenuation);//Ray(p,direction,r.attenuation,r.index,0);
+	}
 
 	std::optional<Ray> RenderSystem::scatter(ECS& ecs, const Ray& r, const HitRecord& rec) const {
 		const double t = random_double();
+		const double s = random_double();
 		// TODO: Probably expensive to search for the associated material at each hit,
 		// allow sphere to have material directly?
 		const auto& mat = ecs.getComponent<Material>(rec.entity);
 		if (t > mat.metallic) {
-			return scatter_lambertian(mat, r, rec);
+			if (s > mat.dielectric) {
+				return scatter_lambertian(mat, r, rec);
+			}
+			return scatter_dielectric(mat, r, rec);
+
 		}
-		else {
-			return scatter_metallic(mat, r, rec);
-		}
+		return scatter_metallic(mat, r, rec);
 	}
 
 
