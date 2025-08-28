@@ -54,18 +54,18 @@ namespace render {
 	}
 
 	std::optional<Ray> RenderSystem::scatter_dielectric(const Material& mat, const Ray& r, const HitRecord& rec) const {
-		double cos_theta = std::fmin(glm::dot(-glm::normalize(r.direction), rec.normal), 1.0);
+		double cos_theta = std::fmin(glm::dot(-glm::normalize(r.direction), glm::normalize(rec.normal)), 1.0);
 		double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 		const double ri = rec.front_face ? (1.0 / mat.refraction_index) : mat.refraction_index;
 		vec3 direction;
 		vec3 p;
 		if (ri * sin_theta > 1. || reflectance(cos_theta, ri) > random_double()) {
-			direction = reflect(r.direction, rec.normal);
+			direction = glm::normalize(reflect(glm::normalize(r.direction), glm::normalize(rec.normal)));
 			p = offset(rec.p,direction,1e-3);
 		}
 		else {
-			direction = refract(glm::normalize(r.direction), rec.normal, ri);
-			p = offset(rec.p,direction,1e-3);//rec.p - rec.normal * 1e-5;
+			direction = glm::normalize(refract(glm::normalize(r.direction), glm::normalize(rec.normal), ri));
+			p = offset(rec.p,direction,1e-5);//rec.p - rec.normal * 1e-5;
 		}
 
 		return r.scattered(p, direction, r.attenuation);//Ray(p,direction,r.attenuation,r.index,0);
