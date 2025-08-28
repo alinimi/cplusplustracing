@@ -41,7 +41,7 @@ namespace render {
 		if (near_zero(scatter_direction)) {
 			scatter_direction = rec.normal;
 		}
-		return r.scattered(offset(rec.p,scatter_direction,1e-3), scatter_direction, r.attenuation * mat.albedo);
+		return r.scattered(offset(rec.p, scatter_direction, 1e-3), scatter_direction, r.attenuation * mat.albedo);
 	}
 
 	std::optional<Ray> RenderSystem::scatter_metallic(const Material& mat, const Ray& r, const HitRecord& rec) const {
@@ -50,7 +50,7 @@ namespace render {
 		if (glm::dot(reflected, rec.normal) < 0) {
 			return {};
 		}
-		return r.scattered(offset(rec.p,reflected,1e-3), reflected, r.attenuation * mat.albedo);
+		return r.scattered(offset(rec.p, reflected, 1e-3), reflected, r.attenuation * mat.albedo);
 	}
 
 	std::optional<Ray> RenderSystem::scatter_dielectric(const Material& mat, const Ray& r, const HitRecord& rec) const {
@@ -61,11 +61,11 @@ namespace render {
 		vec3 p;
 		if (ri * sin_theta > 1. || reflectance(cos_theta, ri) > random_double()) {
 			direction = reflect(r.direction, rec.normal);
-			p = offset(rec.p,direction,1e-3);
+			p = offset(rec.p, direction, 1e-3);
 		}
 		else {
 			direction = refract(glm::normalize(r.direction), rec.normal, ri);
-			p = offset(rec.p,direction,1e-3);//rec.p - rec.normal * 1e-5;
+			p = offset(rec.p, direction, 1e-3);//rec.p - rec.normal * 1e-5;
 		}
 
 		return r.scattered(p, direction, r.attenuation);//Ray(p,direction,r.attenuation,r.index,0);
@@ -114,34 +114,57 @@ namespace render {
 		for (int y = 0; y < cam.height; ++y) {
 			for (int x = 0; x < cam.width; ++x) {
 				for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
-					const Ray r = cam.get_ray(x, y);
-					rays.push(r);
+					Ray r = cam.get_ray(x, y);
+					while (true) {
+						if (r.depth < 0) {
+							break;
+						}
+						const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
+						if (closest_hit.has_value()) {
+							const vec3 direction = closest_hit->normal + random_unit_vector();
+							const auto new_ray = scatter(ecs, r, closest_hit.value());
+							if (new_ray.has_value()) {
+								r = new_ray.value();
+							}
+							else {
+								break;
+							}
+						}
+						else {
+							auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
+							const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+							pixel_colors[r.index] += background_color * r.attenuation;
+							break;
+						}
+
+					}
+
 				}
 			}
 		}
-		while (!rays.empty()) {
-			const Ray r = rays.front();
-			rays.pop();
-			if (r.depth < 0) {
-				continue;
-			}
-			const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
-			if (closest_hit.has_value()) {
-				const vec3 direction = closest_hit->normal + random_unit_vector();
-				const auto new_ray = scatter(ecs, r, closest_hit.value());
-				if (new_ray.has_value()) {
-					rays.push(new_ray.value());
-				}
-				else {
-					continue;
-				}
-			}
-			else {
-				auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
-				const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
-				pixel_colors[r.index] += background_color * r.attenuation;
-			}
-		}
+		// while (!rays.empty()) {
+		// 	const Ray r = rays.front();
+		// 	rays.pop();
+		// 	if (r.depth < 0) {
+		// 		continue;
+		// 	}
+		// 	const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
+		// 	if (closest_hit.has_value()) {
+		// 		const vec3 direction = closest_hit->normal + random_unit_vector();
+		// 		const auto new_ray = scatter(ecs, r, closest_hit.value());
+		// 		if (new_ray.has_value()) {
+		// 			rays.push(new_ray.value());
+		// 		}
+		// 		else {
+		// 			continue;
+		// 		}
+		// 	}
+		// 	else {
+		// 		auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
+		// 		const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+		// 		pixel_colors[r.index] += background_color * r.attenuation;
+		// 	}
+		// }
 
 		std::vector<float> image(cam.width * cam.height * m_channels);
 		for (int y = 0; y < cam.height; ++y) {
