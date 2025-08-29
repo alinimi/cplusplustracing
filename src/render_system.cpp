@@ -136,35 +136,10 @@ namespace render {
 							pixel_colors[r.index] += background_color * r.attenuation;
 							break;
 						}
-
 					}
-
 				}
 			}
 		}
-		// while (!rays.empty()) {
-		// 	const Ray r = rays.front();
-		// 	rays.pop();
-		// 	if (r.depth < 0) {
-		// 		continue;
-		// 	}
-		// 	const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
-		// 	if (closest_hit.has_value()) {
-		// 		const vec3 direction = closest_hit->normal + random_unit_vector();
-		// 		const auto new_ray = scatter(ecs, r, closest_hit.value());
-		// 		if (new_ray.has_value()) {
-		// 			rays.push(new_ray.value());
-		// 		}
-		// 		else {
-		// 			continue;
-		// 		}
-		// 	}
-		// 	else {
-		// 		auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
-		// 		const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
-		// 		pixel_colors[r.index] += background_color * r.attenuation;
-		// 	}
-		// }
 
 		std::vector<float> image(cam.width * cam.height * m_channels);
 		for (int y = 0; y < cam.height; ++y) {
