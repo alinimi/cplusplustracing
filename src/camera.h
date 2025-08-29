@@ -21,6 +21,7 @@ namespace render {
             return Ray(camera_center, ray_direction, color(1., 1., 1.), i * width + j, max_depth);
         } // Ray from the camera center through the pixel center
         Ray get_ray(int i, int j) const {
+            assert(i >= 0 && i < width && j >= 0 && j < height);
             double offset_x = random_double(-0.5, 0.5);
             double offset_y = random_double(-0.5, 0.5);
             auto pixel_center = pixel_00_loc + ((double(i) + offset_x) * pixel_delta_u) + ((double(j) + offset_y) * pixel_delta_v);

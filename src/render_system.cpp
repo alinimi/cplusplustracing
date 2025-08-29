@@ -1,5 +1,6 @@
 #include "common.h"
 #include <iostream>
+#include <thread>
 #include "ecs/entity.h"
 #include "render_system.h"
 #include "camera.h"
@@ -106,40 +107,78 @@ namespace render {
 	}
 
 
-	std::vector<float> RenderSystem::render_ecs(ECS& ecs, const Camera& cam) const {
-		std::vector<color> pixel_colors(cam.width * cam.height, color(0., 0., 0.));
 
-		std::queue<Ray> rays;
-
-		for (int y = 0; y < cam.height; ++y) {
-			for (int x = 0; x < cam.width; ++x) {
-				for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
-					Ray r = cam.get_ray(x, y);
-					while (true) {
-						if (r.depth < 0) {
-							break;
-						}
-						const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
-						if (closest_hit.has_value()) {
-							const vec3 direction = closest_hit->normal + random_unit_vector();
-							const auto new_ray = scatter(ecs, r, closest_hit.value());
-							if (new_ray.has_value()) {
-								r = new_ray.value();
-							}
-							else {
-								break;
-							}
-						}
-						else {
-							auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
-							const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
-							pixel_colors[r.index] += background_color * r.attenuation;
-							break;
-						}
+	void RenderSystem::render_pixel(ECS& ecs, const Camera& cam, int x, int y, std::vector<color>& pixel_colors) const {
+		for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
+			Ray r = cam.get_ray(x, y);
+			while (true) {
+				if (r.depth < 0) {
+					break;
+				}
+				const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
+				if (closest_hit.has_value()) {
+					const vec3 direction = closest_hit->normal + random_unit_vector();
+					const auto new_ray = scatter(ecs, r, closest_hit.value());
+					if (new_ray.has_value()) {
+						r = new_ray.value();
 					}
+					else {
+						break;
+					}
+				}
+				else {
+					auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
+					const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+					pixel_colors[r.index] += background_color * r.attenuation;
+					break;
 				}
 			}
 		}
+
+	}
+
+	std::vector<float> RenderSystem::render_ecs(ECS& ecs, const Camera& cam) const {
+		std::vector<color> pixel_colors(cam.width * cam.height, color(0., 0., 0.));
+
+		std::vector<std::thread> threads;
+		for2dTiled(cam.width, cam.height, 50, 28,
+			[&](int i0, int i1, int j0, int j1) {
+				threads.push_back(std::thread([i0, i1, j0, j1, &ecs, &cam, &pixel_colors, this]() {
+					for (int i = i0; i < i1; ++i) {
+						for (int j = j0; j < j1; ++j) {
+							for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
+								Ray r = cam.get_ray(i, j);
+								while (true) {
+									if (r.depth < 0) {
+										break;
+									}
+									const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
+									if (closest_hit.has_value()) {
+										const vec3 direction = closest_hit->normal + random_unit_vector();
+										const auto new_ray = scatter(ecs, r, closest_hit.value());
+										if (new_ray.has_value()) {
+											r = new_ray.value();
+										}
+										else {
+											break;
+										}
+									}
+									else {
+										auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
+										const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+										pixel_colors[r.index] += background_color * r.attenuation;
+										break;
+									}
+								}
+							}
+						}
+					}
+					}));
+			});
+		for (auto& thread : threads) {
+			thread.join();
+		}
+
 
 		std::vector<float> image(cam.width * cam.height * m_channels);
 		for (int y = 0; y < cam.height; ++y) {

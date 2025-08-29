@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <vector>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -104,7 +105,14 @@ int main() {
     const int channels = 3; // RGB
 
     render::Camera cam = create_camera();
+
+    auto t1 = std::chrono::high_resolution_clock::now();
     const auto image = renderSystem->render_ecs(ecs, cam);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto sec = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+
+    std::clog << "render took " << sec.count() << "s " << (ms-sec).count() << "ms" << std::endl;
     std::clog << "Image data created successfully!" << std::endl;
 
 

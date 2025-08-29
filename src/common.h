@@ -3,6 +3,8 @@
 #define COMMON_H
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
+#include <algorithm>
+#include <functional>
 
 #include <random>
 #include <glm/glm.hpp>
@@ -74,6 +76,19 @@ static double reflectance(double cosine, double refraction_index) {
 inline bool near_zero(vec3 n) {
     auto s = 1e-8;
     return (std::fabs(n.x) < s) && (std::fabs(n.y) < s) && (std::fabs(n.z) < s);
+}
+
+
+
+inline void for2dTiled(int N, int M, int tileH, int tileW,
+                std::function<void(int,int,int,int)> func) {
+    for (int i = 0; i < N; i += tileW) {
+        for (int j = 0; j < M; j += tileH) {
+            int iEnd = std::min(i + tileW, N);
+            int jEnd = std::min(j + tileH, M);
+            func(i, iEnd, j, jEnd);
+        }
+    }
 }
 
 #endif // COMMON_H
