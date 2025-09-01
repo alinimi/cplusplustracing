@@ -141,7 +141,7 @@ namespace render {
 		std::vector<color> pixel_colors(cam.width * cam.height, color(0., 0., 0.));
 
 		std::vector<std::thread> threads;
-		for2dTiled(cam.width, cam.height, 50, 28,
+		for2dTiled(cam.width, cam.height, 400, 8,
 			[&](int i0, int i1, int j0, int j1) {
 				threads.push_back(std::thread([i0, i1, j0, j1, &ecs, &cam, &pixel_colors, this]() {
 					for (int i = i0; i < i1; ++i) {

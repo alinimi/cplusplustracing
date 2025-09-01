@@ -5,7 +5,6 @@
 #include <glm/gtx/norm.hpp>
 #include <algorithm>
 #include <functional>
-
 #include <random>
 #include <glm/glm.hpp>
 using point3 = glm::dvec3;
@@ -14,6 +13,9 @@ using vec3 = glm::dvec3;
 
 constexpr double infinity = std::numeric_limits<double>::infinity();
 
+constexpr inline double degrees_to_radians(double degrees){
+    return degrees * M_PI / 180.;
+}
 
 inline double random_double() {
     static std::uniform_real_distribution<double> distribution(0.0, 1.0);
@@ -61,8 +63,8 @@ inline vec3 refract(const vec3 uv, const vec3 n, double etai_over_etat) {
     return r_out_perp + r_out_parallel;
 }
 
-inline vec3 offset(vec3 p, vec3 dir, double m){
-    return p+dir*m;
+inline vec3 offset(vec3 p, vec3 dir, double m) {
+    return p + dir * m;
 }
 
 
@@ -81,7 +83,7 @@ inline bool near_zero(vec3 n) {
 
 
 inline void for2dTiled(int N, int M, int tileH, int tileW,
-                std::function<void(int,int,int,int)> func) {
+    std::function<void(int, int, int, int)> func) {
     for (int i = 0; i < N; i += tileW) {
         for (int j = 0; j < M; j += tileH) {
             int iEnd = std::min(i + tileW, N);
