@@ -22,35 +22,44 @@ render::Camera create_camera() {
 
     // Camera
 
-    constexpr auto focal_length = 1.0;
-    constexpr double vfov = 90.;
+    constexpr double vfov = 20.;
 
+    constexpr point3 lookfrom = point3(-2,2,1);   // Point camera is looking from
+    constexpr point3 lookat = point3(0,0,-1);  // Point camera is looking at
+    constexpr vec3   vup = vec3(0, 1, 0);     // Camera-relative "up" direction
+    const auto focal_length = glm::length(lookfrom - lookat);
+    const vec3 w = glm::normalize(lookfrom - lookat);
+    const vec3 u = glm::normalize(glm::cross(vup, w));
+    const vec3 v = glm::cross(w, u);
 
     constexpr auto theta = degrees_to_radians(vfov);
-    auto h = std::tan(theta / 2);
-    auto viewport_height = 2. * h * focal_length;
+    const auto h = std::tan(theta / 2);
+    const auto viewport_height = 2. * h * focal_length;
 
 
-    auto viewport_width = viewport_height * (double(image_width) / image_height);
-    constexpr auto camera_center = point3(0, 0, 0);
+    const auto viewport_width = viewport_height * (double(image_width) / image_height);
 
     // Calculate the vectors across the horizontal and down the vertical viewport edges.
-    auto viewport_u = vec3(viewport_width, 0, 0);
-    auto viewport_v = vec3(0, -viewport_height, 0);
+    vec3 viewport_u = viewport_width * u;    // Vector across viewport horizontal edge
+    vec3 viewport_v = viewport_height * -v;  // Vector down viewport vertical edge
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-    auto pixel_delta_u = viewport_u * (1.0 / image_width);
-    auto pixel_delta_v = viewport_v * (1.0 / image_height);
+    const auto pixel_delta_u = viewport_u * (1.0 / image_width);
+    const auto pixel_delta_v = viewport_v * (1.0 / image_height);
 
     // Calculate the location of the upper left pixel.
-    auto viewport_upper_left = camera_center
-        - vec3(0, 0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
-    auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+    const auto viewport_upper_left = lookfrom
+        - focal_length * w - viewport_u / 2.0 - viewport_v / 2.0;
+    const auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
     render::Camera cam;
     cam.width = image_width;
     cam.height = image_height;
-    cam.camera_center = camera_center;
+    cam.camera_center = lookfrom;
+    cam.u = u;
+    cam.v = v;
+    cam.w = w;
+
     cam.pixel_00_loc = pixel00_loc;
     cam.pixel_delta_u = pixel_delta_u;
     cam.pixel_delta_v = pixel_delta_v;

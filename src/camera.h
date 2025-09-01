@@ -12,6 +12,7 @@ namespace render {
         int samples_per_pixel = 100; // Count of random samples for each pixel
         int max_depth = 100; // Maximum number of ray bounces into scene
         vec3 camera_center; // Center of the camera
+        vec3   u, v, w;              // Camera frame basis vectors
         vec3 pixel_00_loc; // Location of the upper left pixel
         vec3 pixel_delta_u; // Delta vector across the horizontal viewport edge
         vec3 pixel_delta_v; // Delta vector down the vertical viewport edge
