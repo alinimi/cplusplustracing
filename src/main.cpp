@@ -24,17 +24,20 @@ render::Camera create_camera() {
 
     constexpr double vfov = 20.;
 
-    constexpr point3 lookfrom = point3(-2,2,1);   // Point camera is looking from
-    constexpr point3 lookat = point3(0,0,-1);  // Point camera is looking at
+    constexpr point3 lookfrom = point3(-2, 2, 1);   // Point camera is looking from
+    constexpr point3 lookat = point3(0, 0, -1);  // Point camera is looking at
     constexpr vec3   vup = vec3(0, 1, 0);     // Camera-relative "up" direction
-    const auto focal_length = glm::length(lookfrom - lookat);
+
+    constexpr double defocus_angle = 10.0;  // Variation angle of rays through each pixel
+    constexpr double focus_dist = 3.4;    // Distance from camera lookfrom point to plane of perfect focus
+
     const vec3 w = glm::normalize(lookfrom - lookat);
     const vec3 u = glm::normalize(glm::cross(vup, w));
     const vec3 v = glm::cross(w, u);
 
     constexpr auto theta = degrees_to_radians(vfov);
     const auto h = std::tan(theta / 2);
-    const auto viewport_height = 2. * h * focal_length;
+    auto viewport_height = 2 * h * focus_dist;
 
 
     const auto viewport_width = viewport_height * (double(image_width) / image_height);
@@ -48,9 +51,12 @@ render::Camera create_camera() {
     const auto pixel_delta_v = viewport_v * (1.0 / image_height);
 
     // Calculate the location of the upper left pixel.
-    const auto viewport_upper_left = lookfrom
-        - focal_length * w - viewport_u / 2.0 - viewport_v / 2.0;
+    const auto viewport_upper_left = lookfrom - (focus_dist * w) - viewport_u / 2. - viewport_v / 2.;
     const auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+    const auto defocus_radius = focus_dist * std::tan(degrees_to_radians(defocus_angle / 2));
+    const auto defocus_disk_u = u * defocus_radius;
+    const auto defocus_disk_v = v * defocus_radius;
 
     render::Camera cam;
     cam.width = image_width;
@@ -63,6 +69,10 @@ render::Camera create_camera() {
     cam.pixel_00_loc = pixel00_loc;
     cam.pixel_delta_u = pixel_delta_u;
     cam.pixel_delta_v = pixel_delta_v;
+    
+    cam.defocus_angle = defocus_angle;
+    cam.defocus_disk_u = defocus_disk_u;
+    cam.defocus_disk_v = defocus_disk_v;
     return cam;
 }
 
