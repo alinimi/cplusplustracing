@@ -9,7 +9,7 @@ namespace render {
     struct Camera {
 
         int width, height;
-        int samples_per_pixel = 100; // Count of random samples for each pixel
+        int samples_per_pixel = 10; // Count of random samples for each pixel
         int max_depth = 100; // Maximum number of ray bounces into scene
         vec3 camera_center; // Center of the camera
         vec3   u, v, w;              // Camera frame basis vectors
