@@ -1,6 +1,7 @@
 #include "common.h"
 #include <iostream>
 #include <thread>
+#include <indicators/progress_bar.hpp>
 #include "ecs/entity.h"
 #include "render_system.h"
 #include "camera.h"
@@ -140,39 +141,70 @@ namespace render {
 	std::vector<float> RenderSystem::render_ecs(ECS& ecs, const Camera& cam) const {
 		std::vector<color> pixel_colors(cam.width * cam.height, color(0., 0., 0.));
 
+		using namespace indicators;
+		ProgressBar bar{
+			option::BarWidth{50},
+			option::Start{"["},
+			option::Fill{"="},
+			option::Lead{">"},
+			option::Remainder{" "},
+			option::End{"]"},
+			option::PostfixText{"Render"},
+			option::ForegroundColor{Color::green},
+			option::ShowPercentage{true},
+			option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
+		};
 		std::vector<std::thread> threads;
-		for2dTiled(cam.width, cam.height, 400, 8,
+
+		const int block_width = cam.width;
+		const int block_height = std::ceil(cam.width/32);
+
+		const int total_blocks = std::ceil(cam.width / float(block_width)) * cam.height;
+		int finished_blocks = 0;
+		std::mutex blocks_mutex;
+
+		for2dTiled(cam.width, cam.height, block_height, block_width,
 			[&](int i0, int i1, int j0, int j1) {
-				threads.push_back(std::thread([i0, i1, j0, j1, &ecs, &cam, &pixel_colors, this]() {
-					for (int i = i0; i < i1; ++i) {
+				threads.push_back(std::thread([
+					i0, i1, j0, j1,
+					&ecs, &cam, &pixel_colors,
+					&blocks_mutex, &finished_blocks, &bar, total_blocks,
+					this
+				]() {
 						for (int j = j0; j < j1; ++j) {
-							for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
-								Ray r = cam.get_ray(i, j);
-								while (true) {
-									if (r.depth < 0) {
-										break;
-									}
-									const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
-									if (closest_hit.has_value()) {
-										const vec3 direction = closest_hit->normal + random_unit_vector();
-										const auto new_ray = scatter(ecs, r, closest_hit.value());
-										if (new_ray.has_value()) {
-											r = new_ray.value();
+							for (int i = i0; i < i1; ++i) {
+								for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
+									Ray r = cam.get_ray(i, j);
+									while (true) {
+										if (r.depth < 0) {
+											break;
+										}
+										const std::optional<HitRecord> closest_hit = hit(ecs, r, Interval(0, infinity));
+										if (closest_hit.has_value()) {
+											const vec3 direction = closest_hit->normal + random_unit_vector();
+											const auto new_ray = scatter(ecs, r, closest_hit.value());
+											if (new_ray.has_value()) {
+												r = new_ray.value();
+											}
+											else {
+												break;
+											}
 										}
 										else {
+											auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
+											const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+											pixel_colors[r.index] += background_color * r.attenuation;
 											break;
 										}
 									}
-									else {
-										auto a = 0.5 * (glm::normalize(r.direction).y + 1.0);
-										const color background_color = (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
-										pixel_colors[r.index] += background_color * r.attenuation;
-										break;
-									}
 								}
 							}
+							{
+								const std::lock_guard<std::mutex> lock(blocks_mutex);
+								finished_blocks += 1;
+							}
+							bar.set_progress(std::floor((float(finished_blocks) / float(total_blocks)) * 100.f));
 						}
-					}
 					}));
 			});
 		for (auto& thread : threads) {

@@ -1,6 +1,7 @@
 [requires]
 stb/cci.20240531
 glm/1.0.1
+indicators/2.3
 [generators]
 CMakeDeps
 CMakeToolchain
