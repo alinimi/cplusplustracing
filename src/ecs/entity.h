@@ -12,9 +12,9 @@ const ComponentType MAX_COMPONENTS = 32;
 using Signature = std::bitset<MAX_COMPONENTS>;
 
 
-
 // Used to define the size of arrays later on
 constexpr Entity MAX_ENTITIES = 5000;
+constexpr Entity INVALID = std::numeric_limits<Entity>::max();
 
 
 class EntityManager {

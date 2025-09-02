@@ -1,11 +1,9 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
-#include <unordered_map>
 #include "entity.h"
 
-
-constexpr Entity INVALID = std::numeric_limits<Entity>::max();
+inline ComponentType nextID = 0;
 
 class IComponentArray {
 public:
@@ -77,62 +75,53 @@ private:
 
 class ComponentManager {
 public:
+    template<typename T>
+    bool isRegistered() const {
+        auto componentID = getComponentType<T>();
+        return m_componentArrays[componentID] != nullptr;
+    }
+
     template <typename T>
     void registerComponent() {
-        const char* typeName = typeid(T).name();
-        assert(m_componentTypes.find(typeName) == m_componentTypes.end() && "Component already registered.");
-        m_componentTypes[typeName] = m_nextComponentType;
-        m_componentArrays[m_nextComponentType] = std::make_unique<ComponentArray<T>>();
-        ++m_nextComponentType;
+        assert(!isRegistered<T>() && "Component already registered.");
+        m_componentArrays[getComponentType<T>()] = std::make_unique<ComponentArray<T>>();
     }
 
     template <typename T>
-    ComponentType getComponentType() {
-        const char* typeName = typeid(T).name();
-        assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "Component not registered.");
-        return m_componentTypes[typeName];
+    ComponentType getComponentType() const {
+        static ComponentType typeID = nextID++;
+        return typeID;
     }
-
 
     template <typename T>
     T& getComponent(Entity entity) {
-        const char* typeName = typeid(T).name();
-        assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "Component not registered.");
-        return getComponentArray<T>()->getData(entity);
+        assert(isRegistered<T>() && "Component not registered.");
+        return getComponentArray<T>().getData(entity);
     }
-
-
 
     template <typename T>
     void addComponent(Entity entity, T component) {
-        const char* typeName = typeid(T).name();
-        getComponentArray<T>()->insertData(entity, component);
-
+        getComponentArray<T>().insertData(entity, component);
     }
 
     template <typename T>
     void removeComponent(Entity entity) {
-        const char* typeName = typeid(T).name();
-        getComponentArray<T>()->removeData(entity);
+        getComponentArray<T>().removeData(entity);
     }
 
     void entityDestroyed(Entity entity) {
-        for (auto& pair : m_componentArrays) {
-            pair.second->EntityDestroyed(entity);
+        for (auto& compArray : m_componentArrays) {
+            compArray->EntityDestroyed(entity);
         }
     }
 
 private:
     template <typename T>
-    ComponentArray<T>* getComponentArray() {
-        const char* typeName = typeid(T).name();
-        assert(m_componentTypes.find(typeName) != m_componentTypes.end() && "Component not registered.");
-        return static_cast<ComponentArray<T>*>(m_componentArrays[m_componentTypes[typeName]].get());
+    ComponentArray<T>& getComponentArray() {
+        assert(isRegistered<T>() && "Component not registered.");
+        return *(static_cast<ComponentArray<T>*>(m_componentArrays[getComponentType<T>()].get()));
     }
-
-    std::unordered_map<const char*, ComponentType> m_componentTypes{}; // Maps component type to its ID
-    std::unordered_map<ComponentType, std::unique_ptr<IComponentArray>> m_componentArrays{}; // Maps component ID to its array
-    ComponentType m_nextComponentType = 0; // Next available component type ID
+    std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> m_componentArrays{}; // Maps component ID to its array
 };
 
 #endif
