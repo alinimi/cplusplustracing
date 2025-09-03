@@ -157,7 +157,7 @@ namespace render {
 		std::vector<std::thread> threads;
 
 		const int block_width = cam.width;
-		const int block_height = std::ceil(cam.width/32);
+		const int block_height = std::ceil(cam.height/32);
 
 		const int total_blocks = std::ceil(cam.width / float(block_width)) * cam.height;
 		int finished_blocks = 0;

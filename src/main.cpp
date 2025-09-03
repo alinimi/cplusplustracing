@@ -86,7 +86,7 @@ int main() {
     ecs.registerComponent<render::Sphere>();
     ecs.registerComponent<render::Material>();
 
-    std::shared_ptr<render::RenderSystem> renderSystem = ecs.registerSystem<render::RenderSystem>();
+    auto& renderSystem = ecs.registerSystem<render::RenderSystem>();
 
     Signature renderSignature;
     renderSignature.set(ecs.getComponentType<render::Sphere>());
@@ -162,7 +162,7 @@ int main() {
     render::Camera cam = create_camera();
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    const auto image = renderSystem->render_ecs(ecs, cam);
+    const auto image = renderSystem.render_ecs(ecs, cam);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);

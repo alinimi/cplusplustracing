@@ -56,7 +56,7 @@ public:
         return m_componentManager.getComponentType<T>();
     }
     template <typename T>
-    std::shared_ptr<T> registerSystem() {
+    T& registerSystem() {
         return m_systemManager.registerSystem<T>();
     }
     template <typename T>

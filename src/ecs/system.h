@@ -1,9 +1,12 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
-#include <unordered_map>
 #include <set>
 #include <memory>
 #include "entity.h"
+
+using SystemType = std::uint8_t;
+inline SystemType nextSystemID = 0;
+const SystemType MAX_SYSTEMS = 32;
 
 
 class System {
@@ -15,38 +18,49 @@ public:
 class SystemManager {
 public:
     template <typename T>
-    std::shared_ptr<T> registerSystem() {
-        const char* typeName = typeid(T).name();
-        assert(m_systems.find(typeName) == m_systems.end() && "System already registered.");
-        m_systems[typeName] = std::make_shared<T>();
-        return std::static_pointer_cast<T>(m_systems[typeName]);
-
+    SystemType getSystemType() const {
+        static SystemType typeID = nextSystemID++;
+        return typeID;
     }
+
+    template<typename T>
+    bool isRegistered() const {
+        auto systemID = getSystemType<T>();
+        return m_systems[systemID] != nullptr;
+    }
+
+    template <typename T>
+    T& registerSystem() {
+        assert(!isRegistered<T>() && "System already registered.");
+        assert(getSystemType<T>() < m_systems.size() && "Max number of systems reached.");
+        m_systems[getSystemType<T>()] = std::make_unique<T>();
+        return *(static_cast<T*>(m_systems[getSystemType<T>()].get()));
+    }
+
     template <typename T>
     void setSignature(Signature signature) {
-        const char* typeName = typeid(T).name();
-        assert(m_systems.find(typeName) != m_systems.end() && "System not registered.");
-        m_signatures[typeName] = signature;
+        assert(isRegistered<T>() && "System not registered.");
+        m_signatures[getSystemType<T>()] = signature;
     }
     void entityDestroyed(Entity entity) {
-        for (auto& pair : m_systems) {
-            pair.second->entities.erase(entity);
+        for (auto& system : m_systems) {
+            system->entities.erase(entity);
         }
     }
     void EntitySignatureChanged(Entity entity, Signature signature) {
-        for (auto& pair : m_systems) {
-            const char* typeName = pair.first;
-            if ((signature & m_signatures[typeName]) == m_signatures[typeName]) {
-                pair.second->entities.insert(entity);
+        for (int i = 0; i < nextSystemID; ++i) {
+            if ((signature & m_signatures[i]) == m_signatures[i]) {
+                m_systems[i]->entities.insert(entity);
             }
             else {
-                pair.second->entities.erase(entity);
+                m_systems[i]->entities.erase(entity);
             }
         }
     }
+
 private:
-    std::unordered_map<const char*, std::shared_ptr<System>> m_systems{}; // Maps system type to its instance
-    std::unordered_map<const char*, Signature> m_signatures{};
+    std::array<std::unique_ptr<System>, MAX_SYSTEMS> m_systems{}; // Maps system type to its instance
+    std::array<Signature, MAX_SYSTEMS> m_signatures{};
 
 
 

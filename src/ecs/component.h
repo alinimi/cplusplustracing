@@ -3,7 +3,7 @@
 
 #include "entity.h"
 
-inline ComponentType nextID = 0;
+inline ComponentType nextComponentID = 0;
 
 class IComponentArray {
 public:
@@ -84,12 +84,13 @@ public:
     template <typename T>
     void registerComponent() {
         assert(!isRegistered<T>() && "Component already registered.");
+        assert(getComponentType<T>() < m_componentArrays.size() && "Max number of components reached.");
         m_componentArrays[getComponentType<T>()] = std::make_unique<ComponentArray<T>>();
     }
 
     template <typename T>
     ComponentType getComponentType() const {
-        static ComponentType typeID = nextID++;
+        static ComponentType typeID = nextComponentID++;
         return typeID;
     }
 
