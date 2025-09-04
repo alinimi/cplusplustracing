@@ -157,10 +157,10 @@ namespace render {
 		std::vector<std::thread> threads;
 
 		const int block_width = cam.width;
-		const int block_height = std::ceil(cam.height/32);
+		const int block_height = std::ceil(cam.height / 32);
 
 		const int total_blocks = std::ceil(cam.width / float(block_width)) * cam.height;
-		int finished_blocks = 0;
+		std::atomic<u_int32_t> finished_blocks = 0;
 		std::mutex blocks_mutex;
 
 		for2dTiled(cam.width, cam.height, block_height, block_width,
@@ -199,10 +199,7 @@ namespace render {
 									}
 								}
 							}
-							{
-								const std::lock_guard<std::mutex> lock(blocks_mutex);
-								finished_blocks += 1;
-							}
+							finished_blocks++;
 							bar.set_progress(std::floor((float(finished_blocks) / float(total_blocks)) * 100.f));
 						}
 					}));
