@@ -126,7 +126,8 @@ int main() {
                 if (choose_mat < 0.8) {
                     // diffuse
                     const color albedo = random_vec3() * random_vec3();
-                    ecs.addComponent(sphere, render::Sphere{ center, 0.2 });
+                    const auto direction = vec3(0, random_double(0, .5), 0);
+                    ecs.addComponent(sphere, render::Sphere{ center, 0.2 , direction });
                     ecs.addComponent(sphere, render::Material{ albedo, 0. , 0. });
                 }
                 else if (choose_mat < 0.95) {

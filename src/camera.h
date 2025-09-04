@@ -32,7 +32,8 @@ namespace render {
             const auto pixel_sample = pixel_00_loc + ((double(i) + offset_x) * pixel_delta_u) + ((double(j) + offset_y) * pixel_delta_v);
             const auto ray_origin = (defocus_angle <= 0) ? camera_center : defocus_disk_sample();
             const auto ray_direction = glm::normalize(pixel_sample - ray_origin);
-            return Ray(ray_origin, ray_direction, color(1., 1., 1.), j * width + i, max_depth);
+            const auto ray_time = random_double();
+            return Ray(ray_origin, ray_direction, ray_time, color(1., 1., 1.), j * width + i, max_depth);
         } // Ray from the camera center through the pixel center
 
 

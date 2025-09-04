@@ -8,9 +8,7 @@ namespace render {
     struct Sphere {
         point3 center;
         double radius;
-        constexpr vec3 normal(const vec3 point) const {
-            return(point - center) / radius;
-        }
+        vec3 direction{ 0.,0.,0. };
     };
 }
 #endif

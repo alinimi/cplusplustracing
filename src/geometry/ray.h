@@ -14,11 +14,23 @@ namespace render {
         constexpr Ray(
             point3 origin,
             vec3 direction,
+            double time,
             color attenuation,
             int index,
             int depth
         ) :
-            origin(origin), direction(direction), attenuation(attenuation), index(index), depth(depth)
+            origin(origin), direction(direction), time(time), attenuation(attenuation), index(index), depth(depth)
+        {
+        }
+
+        constexpr Ray(
+            point3 origin,
+            vec3 direction,
+            color attenuation,
+            int index,
+            int depth
+        ) :
+            origin(origin), direction(direction), time(0), attenuation(attenuation), index(index), depth(depth)
         {
         }
 
@@ -28,7 +40,7 @@ namespace render {
             color new_attenuation
         ) const
         {
-            return Ray(new_origin, new_direction, new_attenuation, index, depth - 1);
+            return Ray(new_origin, new_direction, time, new_attenuation, index, depth - 1);
         }
 
         constexpr point3 at(double t) const {
@@ -36,6 +48,7 @@ namespace render {
         }
         point3 origin;
         vec3 direction;
+        double time;
         color attenuation;
         int index;
         int depth;

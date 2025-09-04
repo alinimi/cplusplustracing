@@ -11,7 +11,8 @@
 namespace render {
 
 	std::optional<HitRecord> RenderSystem::hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t) const {
-		const vec3 oc = sphere.center - r.origin;
+		const vec3 current_center = sphere.center + sphere.direction * r.time;
+		const vec3 oc = current_center - r.origin;
 		const auto a = glm::length2(r.direction);
 		const auto h = glm::dot(r.direction, oc);
 		const auto c = glm::length2(oc) - sphere.radius * sphere.radius;
@@ -35,7 +36,7 @@ namespace render {
 		const auto rec_t = root;
 		const auto point = r.at(rec_t);
 
-		return HitRecord{ rec_t,point,sphere.normal(point),r };
+		return HitRecord{ rec_t,point,(point - current_center) / sphere.radius,r };
 	}
 
 	std::optional<Ray> RenderSystem::scatter_lambertian(const Material& mat, const Ray& r, const HitRecord& rec) const {
