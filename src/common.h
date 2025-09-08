@@ -2,6 +2,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 #define GLM_ENABLE_EXPERIMENTAL
+#include <limits>
 #include <glm/gtx/norm.hpp>
 #include <algorithm>
 #include <functional>
@@ -13,48 +14,65 @@ using vec3 = glm::dvec3;
 
 constexpr double infinity = std::numeric_limits<double>::infinity();
 
-constexpr inline double degrees_to_radians(double degrees){
+constexpr inline double degrees_to_radians(double degrees) {
     return degrees * M_PI / 180.;
 }
 
-inline double random_double() {
-    static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-    static std::mt19937 generator(3);
-    return distribution(generator);
+
+
+struct RNG {
+    RNG() : generator() {}
+    RNG(uint_fast32_t seed) :generator(seed) {}
+
+    RNG clone() {
+
+        uint_fast32_t new_seed = uint_distribution(generator);
+        return RNG(new_seed);
+        // return RNG(uint_distribution(generator));
+    }
+
+    double random_double() {
+        return double_distribution(generator);
+    }
+    double random_double(double min, double max) {
+        return min + (max - min) * random_double();
+
+    }
+
+    std::mt19937 generator;
+    std::uniform_real_distribution<double> double_distribution{ 0.0, 1.0 };
+    std::uniform_int_distribution<uint_fast32_t> uint_distribution{
+        std::numeric_limits<uint_fast32_t>::min(),
+        std::numeric_limits<uint_fast32_t>::max()
+    };
+};
+
+inline vec3 random_vec3(RNG& rng) {
+    return vec3(rng.random_double(), rng.random_double(), rng.random_double());
 }
 
-inline double random_double(double min, double max) {
-    // Returns a random real in [min,max).
-    return min + (max - min) * random_double();
+inline vec3 random_vec3(double min, double max, RNG& rng) {
+    return vec3(rng.random_double(min, max), rng.random_double(min, max), rng.random_double(min, max));
 }
 
-inline vec3 random_vec3() {
-    return vec3(random_double(), random_double(), random_double());
-}
-
-inline vec3 random_vec3(double min, double max) {
-    return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
-}
-
-inline vec3 random_unit_vector() {
-    auto p = random_vec3(-1., 1.);
+inline vec3 random_unit_vector(RNG& rng) {
+    auto p = random_vec3(-1., 1., rng);
     while (glm::length2(p) > 1 || glm::length2(p) <= 1e-160) {
-        p = random_vec3(-1., 1.);
+        p = random_vec3(-1., 1., rng);
     }
     return p / glm::length(p);
 }
 
-
-inline vec3 random_in_unit_disk() {
+inline vec3 random_in_unit_disk(RNG& rng) {
     while (true) {
-        auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
+        auto p = vec3(rng.random_double(-1, 1), rng.random_double(-1, 1), 0);
         if (glm::length2(p) < 1)
             return p;
     }
 }
 
-inline vec3 random_on_hemisphere(vec3 n) {
-    vec3 unit_vector = random_unit_vector();
+inline vec3 random_on_hemisphere(vec3 n, RNG& rng) {
+    vec3 unit_vector = random_unit_vector(rng);
     if (glm::dot(unit_vector, n) < 0) {
         return -unit_vector;
     }

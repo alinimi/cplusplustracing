@@ -112,10 +112,12 @@ int main() {
     ecs.addComponent(ground, render::Sphere{ {0., -1000., 0.}, 1000. });
     ecs.addComponent(ground, render::Material{ {0.5, 0.5, 0.5}, 0., 0. });
 
+    RNG rng = RNG(3);
+
     for (int a = -11; a < 11; a++) {
         for (int b = -11; b < 11; b++) {
-            auto choose_mat = random_double();
-            point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
+            auto choose_mat = rng.random_double();
+            point3 center(a + 0.9 * rng.random_double(), 0.2, b + 0.9 * rng.random_double());
 
 
             const Entity sphere = ecs.createEntity();
@@ -125,15 +127,15 @@ int main() {
 
                 if (choose_mat < 0.8) {
                     // diffuse
-                    const color albedo = random_vec3() * random_vec3();
-                    const auto direction = vec3(0, random_double(0, .5), 0);
+                    const color albedo = random_vec3(rng) * random_vec3(rng);
+                    const auto direction = vec3(0, rng.random_double(0, .5), 0);
                     ecs.addComponent(sphere, render::Sphere{ center, 0.2 , direction });
                     ecs.addComponent(sphere, render::Material{ albedo, 0. , 0. });
                 }
                 else if (choose_mat < 0.95) {
                     // metal
-                    const color albedo = random_vec3();
-                    const auto fuzz = random_double(0, 0.5);
+                    const color albedo = random_vec3(rng);
+                    const auto fuzz = rng.random_double(0, 0.5);
                     ecs.addComponent(sphere, render::Sphere{ center, 0.2 });
                     ecs.addComponent(sphere, render::Material{ albedo, 1. , 0., fuzz });
                 }
@@ -163,7 +165,7 @@ int main() {
     render::Camera cam = create_camera();
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    const auto image = renderSystem.render_ecs(ecs, cam);
+    const auto image = renderSystem.render_ecs(ecs, cam, rng);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
