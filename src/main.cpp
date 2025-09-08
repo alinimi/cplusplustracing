@@ -11,17 +11,12 @@
 #include "render_system.h"
 
 render::Camera create_camera() {
+    // image params
     constexpr auto aspect_ratio = 16.0 / 9.0;
     constexpr int image_width = 1200;
-
-    // Calculate the image height, and ensure that it's at least 1.
     constexpr int image_height = std::max<int>(image_width / aspect_ratio, 1);
 
-    // image_height = (image_height < 1) ? 1 : image_height;
-
-
-    // Camera
-
+    // camera
     constexpr double vfov = 20.;
 
     constexpr point3 lookfrom = point3(13., 2., 3.);   // Point camera is looking from
@@ -38,7 +33,6 @@ render::Camera create_camera() {
     constexpr auto theta = degrees_to_radians(vfov);
     const auto h = std::tan(theta / 2);
     auto viewport_height = 2 * h * focus_dist;
-
 
     const auto viewport_width = viewport_height * (double(image_width) / image_height);
 
@@ -80,9 +74,6 @@ render::Camera create_camera() {
 int main() {
     ECS ecs;
 
-
-
-
     ecs.registerComponent<render::Sphere>();
     ecs.registerComponent<render::Material>();
 
@@ -94,19 +85,7 @@ int main() {
 
     ecs.setSystemSignature<render::RenderSystem>(renderSignature);
 
-
-    // Signature signature;
-    // signature.set(gCoordinator.GetComponentType<Gravity>());
-    // signature.set(gCoordinator.GetComponentType<RigidBody>());
-    // signature.set(gCoordinator.GetComponentType<Transform>());
-    // gCoordinator.SetSystemSignature<PhysicsSystem>(signature);
-
-    // std::vector<Entity> entities(MAX_ENTITIES);
-
-
     EntityManager entityManager;
-
-
 
     const Entity ground = ecs.createEntity();
     ecs.addComponent(ground, render::Sphere{ {0., -1000., 0.}, 1000. });
@@ -119,9 +98,7 @@ int main() {
             auto choose_mat = rng.random_double();
             point3 center(a + 0.9 * rng.random_double(), 0.2, b + 0.9 * rng.random_double());
 
-
             const Entity sphere = ecs.createEntity();
-
 
             if ((center - point3(4, 0.2, 0)).length() > 0.9) {
 
@@ -173,8 +150,6 @@ int main() {
     std::clog << "render took " << sec.count() << "s " << (ms - sec).count() << "ms" << std::endl;
     std::clog << "Image data created successfully!" << std::endl;
 
-
-    // Write to HDR file using stb_image_write
     if (stbi_write_hdr("../../dummy.hdr", cam.width, cam.height, channels, image.data())) {
         std::clog << "Saved dummy.hdr successfully!" << std::endl;
     }

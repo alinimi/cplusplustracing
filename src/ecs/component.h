@@ -67,10 +67,6 @@ private:
     std::array<Entity, MAX_ENTITIES> m_dense{};
     std::array<size_t, MAX_ENTITIES> m_sparse{}; // maps entity -> index in dense
     size_t m_size = 0; // Current size of the component array
-
-
-
-
 };
 
 class ComponentManager {

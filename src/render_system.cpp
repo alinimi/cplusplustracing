@@ -17,7 +17,6 @@ namespace render {
 		const auto c = glm::length2(oc) - sphere.radius * sphere.radius;
 		const auto discriminant = h * h - a * c;
 
-
 		if (discriminant < 0) {
 			return {};
 		}
@@ -225,7 +224,6 @@ namespace render {
 		for (auto& thread : threads) {
 			thread.join();
 		}
-
 
 		std::vector<float> image(cam.width * cam.height * m_channels);
 		for (int y = 0; y < cam.height; ++y) {

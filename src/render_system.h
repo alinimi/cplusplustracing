@@ -12,10 +12,6 @@
 using namespace indicators;
 
 namespace render {
-
-
-
-
     class RenderSystem :public System {
     public:
         std::optional<HitRecord> hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t) const;
@@ -38,8 +34,6 @@ namespace render {
 
     private:
         int m_channels = 3; // Number of color channels (R, G, B)
-
-
     };
 
 }

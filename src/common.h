@@ -18,8 +18,6 @@ constexpr inline double degrees_to_radians(double degrees) {
     return degrees * M_PI / 180.;
 }
 
-
-
 struct RNG {
     RNG() : generator() {}
     RNG(uint_fast32_t seed) :generator(seed) {}
@@ -94,7 +92,6 @@ inline vec3 offset(vec3 p, vec3 dir, double m) {
     return p + dir * m;
 }
 
-
 static double reflectance(double cosine, double refraction_index) {
     // Use Schlick's approximation for reflectance.
     auto r0 = (1 - refraction_index) / (1 + refraction_index);
@@ -106,8 +103,6 @@ inline bool near_zero(vec3 n) {
     auto s = 1e-8;
     return (std::fabs(n.x) < s) && (std::fabs(n.y) < s) && (std::fabs(n.z) < s);
 }
-
-
 
 inline void for2dTiled(int N, int M, int tileH, int tileW,
     std::function<void(int, int, int, int)> func) {
