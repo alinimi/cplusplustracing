@@ -1,6 +1,7 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
+#include <ranges>
 #include "entity.h"
 
 inline ComponentType nextComponentID = 0;
@@ -62,6 +63,10 @@ public:
         return m_size;
     }
 
+    const auto dense(){
+        return std::views::take(m_dense,m_size);
+    }
+
 private:
     std::array<T, MAX_ENTITIES> m_componentArray; // Array of components
     std::array<Entity, MAX_ENTITIES> m_dense{};
@@ -112,12 +117,13 @@ public:
         }
     }
 
-private:
     template <typename T>
     ComponentArray<T>& getComponentArray() {
         assert(isRegistered<T>() && "Component not registered.");
         return *(static_cast<ComponentArray<T>*>(m_componentArrays[getComponentType<T>()].get()));
     }
+
+private:
     std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> m_componentArrays{}; // Maps component ID to its array
 };
 

@@ -18,8 +18,8 @@ public:
     void destroyEntity(Entity entity) {
         m_entityManager.destroyEntity(entity);
         m_componentManager.entityDestroyed(entity);
-        m_systemManager.entityDestroyed(entity);
     }
+
     template <typename T>
     void registerComponent() {
         m_componentManager.registerComponent<T>();
@@ -32,7 +32,6 @@ public:
         signature.set(m_componentManager.getComponentType<T>(),
             true);
         m_entityManager.setSignature(entity, signature);
-        m_systemManager.EntitySignatureChanged(entity, m_entityManager.getSignature(entity));
     }
 
     template <typename T>
@@ -41,7 +40,6 @@ public:
         auto signature = m_entityManager.getSignature(entity);
         signature.set(m_componentManager.getComponentType<T>(), false);
         m_entityManager.setSignature(entity, signature);
-        m_systemManager.EntitySignatureChanged(entity, m_entityManager.getSignature(entity));
     }
     template <typename T>
     T& getComponent(Entity entity) {
@@ -52,16 +50,17 @@ public:
         return m_componentManager.getComponent<T>(entity);
     }
     template <typename T>
+    ComponentArray<T>& getComponentArray() {
+        return m_componentManager.getComponentArray<T>();
+    }
+    
+    template <typename T>
     ComponentType getComponentType() {
         return m_componentManager.getComponentType<T>();
     }
     template <typename T>
     T& registerSystem() {
         return m_systemManager.registerSystem<T>();
-    }
-    template <typename T>
-    void setSystemSignature(Signature signature) {
-        m_systemManager.setSignature<T>(signature);
     }
 
 private:

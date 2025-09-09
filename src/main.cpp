@@ -78,12 +78,7 @@ int main() {
     ecs.registerComponent<render::Material>();
 
     auto& renderSystem = ecs.registerSystem<render::RenderSystem>();
-
-    Signature renderSignature;
-    renderSignature.set(ecs.getComponentType<render::Sphere>());
-    renderSignature.set(ecs.getComponentType<render::Material>());
-
-    ecs.setSystemSignature<render::RenderSystem>(renderSignature);
+    renderSystem.view = View<render::Sphere, render::Material>(ecs.getComponentArray<render::Sphere>(),ecs.getComponentArray<render::Material>());
 
     EntityManager entityManager;
 

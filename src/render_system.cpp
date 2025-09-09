@@ -17,6 +17,7 @@ namespace render {
 		const auto c = glm::length2(oc) - sphere.radius * sphere.radius;
 		const auto discriminant = h * h - a * c;
 
+
 		if (discriminant < 0) {
 			return {};
 		}
@@ -75,30 +76,26 @@ namespace render {
 	std::optional<Ray> RenderSystem::scatter(ECS& ecs, const Ray& r, const HitRecord& rec, RNG& rng) const {
 		const double t = rng.random_double();
 		const double s = rng.random_double();
-		// TODO: Probably expensive to search for the associated material at each hit,
-		// allow sphere to have material directly?
-		const auto& mat = ecs.getComponent<Material>(rec.entity);
-		if (t > mat.metallic) {
-			if (s > mat.dielectric) {
-				return scatter_lambertian(mat, r, rec, rng);
+		if (t > rec.mat.metallic) {
+			if (s > rec.mat.dielectric) {
+				return scatter_lambertian(rec.mat, r, rec, rng);
 			}
-			return scatter_dielectric(mat, r, rec, rng);
+			return scatter_dielectric(rec.mat, r, rec, rng);
 
 		}
-		return scatter_metallic(mat, r, rec, rng);
+		return scatter_metallic(rec.mat, r, rec, rng);
 	}
 
 
-	std::optional<HitRecord> RenderSystem::hit(ECS& ecs, const Ray& r, Interval ray_t) const {
+	std::optional<HitRecord> RenderSystem::hit(ECS& ecs, const Ray& r, Interval ray_t) {
 		std::optional<HitRecord> closest_hit;
 		auto closest_so_far = ray_t.max;
-		for (auto entity : entities)
+		for (const auto& [sphere,material] : view)
 		{
-			const auto& sphere = ecs.getComponent<Sphere>(entity);
 			const auto hit = hit_sphere(sphere, r, Interval(ray_t.min, closest_so_far));
 			if (hit.has_value() && hit->t < closest_so_far) {
 				closest_hit = hit;
-				closest_hit->entity = entity;
+				closest_hit->mat = material;
 				closest_so_far = hit->t;
 			}
 		}
@@ -108,7 +105,7 @@ namespace render {
 
 
 
-	void RenderSystem::render_pixel(ECS& ecs, const Camera& cam, int x, int y, std::vector<color>& pixel_colors, RNG& rng) const {
+	void RenderSystem::render_pixel(ECS& ecs, const Camera& cam, int x, int y, std::vector<color>& pixel_colors, RNG& rng) {
 		for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
 			Ray r = cam.get_ray(x, y, rng);
 			while (true) {
@@ -146,7 +143,7 @@ namespace render {
 		ProgressBar& bar,
 		int total_blocklines,
 		RNG thread_rng
-	) const {
+	) {
 		// const vec3 direction = random_unit_vector(thread_rng);
 
 		for (int j = j0; j < j1; ++j) {
@@ -183,7 +180,7 @@ namespace render {
 
 	}
 
-	std::vector<float> RenderSystem::render_ecs(ECS& ecs, const Camera& cam, RNG& rng) const {
+	std::vector<float> RenderSystem::render_ecs(ECS& ecs, const Camera& cam, RNG& rng) {
 		std::vector<color> pixel_colors(cam.width * cam.height, color(0., 0., 0.));
 
 		ProgressBar bar{
@@ -224,6 +221,7 @@ namespace render {
 		for (auto& thread : threads) {
 			thread.join();
 		}
+
 
 		std::vector<float> image(cam.width * cam.height * m_channels);
 		for (int y = 0; y < cam.height; ++y) {

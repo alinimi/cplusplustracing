@@ -22,7 +22,7 @@ namespace render {
         point3 p;
         vec3 normal;
         bool front_face;
-        Entity entity;
+        Material mat;
     };
 
 }
