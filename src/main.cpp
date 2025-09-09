@@ -78,7 +78,10 @@ int main() {
     ecs.registerComponent<render::Material>();
 
     auto& renderSystem = ecs.registerSystem<render::RenderSystem>();
-    renderSystem.view = View<render::Sphere, render::Material>(ecs.getComponentArray<render::Sphere>(),ecs.getComponentArray<render::Material>());
+    renderSystem.view = View<render::Sphere, render::Material>(
+        ecs.getComponentArray<render::Sphere>(),
+        ecs.getComponentArray<render::Material>()
+    );
 
     EntityManager entityManager;
 

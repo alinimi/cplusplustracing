@@ -18,38 +18,46 @@ public:
     void destroyEntity(Entity entity) {
         m_entityManager.destroyEntity(entity);
         m_componentManager.entityDestroyed(entity);
+        m_systemManager.entityChanged();
     }
 
     template <typename T>
     void registerComponent() {
         m_componentManager.registerComponent<T>();
     }
+
     template <typename T>
     void addComponent(Entity entity, T component) {
         m_componentManager.addComponent<T>(entity, component);
+        m_systemManager.entityChanged();
     }
 
     template <typename T>
     void removeComponent(Entity entity) {
         m_componentManager.removeComponent<T>(entity);
+        m_systemManager.entityChanged();
     }
+
     template <typename T>
     T& getComponent(Entity entity) {
         return m_componentManager.getComponent<T>(entity);
     }
+
     template <typename T>
     const T& getComponent(Entity entity) const {
         return m_componentManager.getComponent<T>(entity);
     }
+
     template <typename T>
     ComponentArray<T>& getComponentArray() {
         return m_componentManager.getComponentArray<T>();
     }
-    
+
     template <typename T>
     ComponentType getComponentType() {
         return m_componentManager.getComponentType<T>();
     }
+
     template <typename T>
     T& registerSystem() {
         return m_systemManager.registerSystem<T>();

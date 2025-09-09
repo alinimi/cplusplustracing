@@ -12,14 +12,17 @@ const SystemType MAX_SYSTEMS = 32;
 template<typename... Cs>
 class View {
 public:
-    View()
+    View() : dirty(true)
     {
     }
 
-
     View(ComponentArray<Cs>&... storages)
-        : storages{&storages...} 
+        : storages{ &storages... }, dirty(true)
     {
+    }
+
+    void entityChanged() {
+        dirty = true;
     }
 
     struct iterator {
@@ -31,10 +34,7 @@ public:
         }
 
         void operator++() {
-            while (++index < std::get<0>(view->storages)->dense().size()) {
-                Entity e = std::get<0>(view->storages)->dense()[index];
-                if (view->hasAll(e)) break;
-            }
+            ++index;
         }
 
         auto operator*() {
@@ -44,19 +44,35 @@ public:
     };
 
     iterator begin() {
-        size_t i = 0;
-        while (i < std::get<0>(storages)->dense().size() && !hasAll(std::get<0>(storages)->dense()[i])) {
-            ++i;
-        }
-        return {i, this};
+        ensureBuilt();
+        return { 0, this };
     }
 
     iterator end() {
-        return {std::get<0>(storages)->dense().size(), this};
+        ensureBuilt();
+        return { entities.size(),this };
     }
 
 private:
     std::tuple<ComponentArray<Cs>*...> storages;
+    std::vector<Entity> entities;
+    bool dirty;
+
+
+    void build() {
+        entities.clear();
+        for (const auto& entity : std::get<0>(storages)->dense()) {
+            if (hasAll(entity)) {
+                entities.push_back(entity);
+            }
+        }
+    }
+
+    void ensureBuilt() {
+        if (!dirty) return;
+        build();
+        dirty = false;
+    }
 
     bool hasAll(Entity e) {
         return (std::get<ComponentArray<Cs>*>(storages)->hasComponent(e) && ...);
@@ -91,6 +107,10 @@ public:
         assert(getSystemType<T>() < m_systems.size() && "Max number of systems reached.");
         m_systems[getSystemType<T>()] = std::make_unique<T>();
         return *(static_cast<T*>(m_systems[getSystemType<T>()].get()));
+    }
+
+    void entityChanged() {
+
     }
 
 private:
