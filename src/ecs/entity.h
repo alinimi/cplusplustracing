@@ -9,7 +9,6 @@ using Entity = uint32_t;
 using ComponentType = std::uint8_t;
 
 const ComponentType MAX_COMPONENTS = 32;
-using Signature = std::bitset<MAX_COMPONENTS>;
 
 
 // Used to define the size of arrays later on
@@ -41,22 +40,8 @@ public:
         m_availableEntities.push(entity);
     }
 
-    void setSignature(Entity entity, Signature signature) {
-        if (entity >= MAX_ENTITIES) {
-            throw std::out_of_range("Entity out of range");
-        }
-        m_signatures[entity] = signature;
-    }
-    Signature getSignature(Entity entity) const {
-        if (entity >= MAX_ENTITIES) {
-            throw std::out_of_range("Entity out of range");
-        }
-        return m_signatures[entity];
-    }
-
 private:
     std::queue<Entity> m_availableEntities; // Queue of available entities
-    std::array<Signature, MAX_ENTITIES> m_signatures; // Signatures for each entity
 };
 
 

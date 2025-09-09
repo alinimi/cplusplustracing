@@ -27,19 +27,11 @@ public:
     template <typename T>
     void addComponent(Entity entity, T component) {
         m_componentManager.addComponent<T>(entity, component);
-
-        auto signature = m_entityManager.getSignature(entity);
-        signature.set(m_componentManager.getComponentType<T>(),
-            true);
-        m_entityManager.setSignature(entity, signature);
     }
 
     template <typename T>
     void removeComponent(Entity entity) {
         m_componentManager.removeComponent<T>(entity);
-        auto signature = m_entityManager.getSignature(entity);
-        signature.set(m_componentManager.getComponentType<T>(), false);
-        m_entityManager.setSignature(entity, signature);
     }
     template <typename T>
     T& getComponent(Entity entity) {
