@@ -78,11 +78,6 @@ int main() {
     ecs.registerComponent<render::Material>();
 
     auto& renderSystem = ecs.registerSystem<render::RenderSystem>();
-    renderSystem.view = View<render::Sphere, render::Material>(
-        ecs.getComponentArray<render::Sphere>(),
-        ecs.getComponentArray<render::Material>()
-    );
-
     EntityManager entityManager;
 
     const Entity ground = ecs.createEntity();
@@ -139,8 +134,17 @@ int main() {
 
     render::Camera cam = create_camera();
 
+    View<render::Sphere, render::Material> render_view{
+            ecs.getComponentArray<render::Sphere>(),
+            ecs.getComponentArray<render::Material>()
+    };
+
     auto t1 = std::chrono::high_resolution_clock::now();
-    const auto image = renderSystem.render_ecs(ecs, cam, rng);
+    const auto image = renderSystem.render_ecs(
+        render_view,
+        cam,
+        rng
+    );
     auto t2 = std::chrono::high_resolution_clock::now();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
