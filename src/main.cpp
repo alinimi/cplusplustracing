@@ -134,6 +134,7 @@ int main() {
 
     render::Camera cam = create_camera();
 
+    // TODO: implement view cache invalidation, probably via registration in the ecs
     View<render::Sphere, render::Material> render_view{
             ecs.getComponentArray<render::Sphere>(),
             ecs.getComponentArray<render::Material>()
