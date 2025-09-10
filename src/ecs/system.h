@@ -43,23 +43,51 @@ public:
         }
     };
 
+    struct const_iterator {
+        size_t index;
+        const View* const view;
+
+        bool operator!=(const const_iterator& other) const {
+            return index != other.index;
+        }
+
+        void operator++() {
+            ++index;
+        }
+
+        auto operator*() const {
+            Entity e = std::get<0>(view->storages)->dense()[index];
+            return view->get(e);
+        }
+    };
+
+
     iterator begin() {
         ensureBuilt();
         return { 0, this };
     }
-
     iterator end() {
         ensureBuilt();
         return { entities.size(),this };
     }
 
+    const_iterator begin() const {
+        ensureBuilt();
+        return { 0, this };
+    }
+    const_iterator end() const {
+        ensureBuilt();
+        return { entities.size(),this };
+    }
+
+
 private:
     std::tuple<ComponentArray<Cs>*...> storages;
-    std::vector<Entity> entities;
-    bool dirty;
+    mutable std::vector<Entity> entities;
+    mutable bool dirty;
 
 
-    void build() {
+    void build() const {
         entities.clear();
         for (const auto& entity : std::get<0>(storages)->dense()) {
             if (hasAll(entity)) {
@@ -68,19 +96,24 @@ private:
         }
     }
 
-    void ensureBuilt() {
+    void ensureBuilt() const {
         if (!dirty) return;
         build();
         dirty = false;
     }
 
-    bool hasAll(Entity e) {
+    bool hasAll(Entity e) const {
         return (std::get<ComponentArray<Cs>*>(storages)->hasComponent(e) && ...);
     }
 
     auto get(Entity e) {
         return std::tuple<Cs&...>(std::get<ComponentArray<Cs>*>(storages)->getData(e)...);
     }
+
+    auto get(Entity e) const {
+        return std::tuple<Cs&...>(std::get<ComponentArray<Cs>*>(storages)->getData(e)...);
+    }
+
 };
 
 class System {

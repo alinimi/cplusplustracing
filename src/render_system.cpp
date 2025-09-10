@@ -17,7 +17,6 @@ namespace render {
 		const auto c = glm::length2(oc) - sphere.radius * sphere.radius;
 		const auto discriminant = h * h - a * c;
 
-
 		if (discriminant < 0) {
 			return {};
 		}
@@ -69,7 +68,6 @@ namespace render {
 			direction = refract(glm::normalize(r.direction), rec.normal, ri);
 			p = offset(rec.p, direction, 1e-3);//rec.p - rec.normal * 1e-5;
 		}
-
 		return r.scattered(p, direction, r.attenuation);//Ray(p,direction,r.attenuation,r.index,0);
 	}
 
@@ -81,16 +79,15 @@ namespace render {
 				return scatter_lambertian(rec.mat, r, rec, rng);
 			}
 			return scatter_dielectric(rec.mat, r, rec, rng);
-
 		}
 		return scatter_metallic(rec.mat, r, rec, rng);
 	}
 
 
-	std::optional<HitRecord> RenderSystem::hit(ECS& ecs, const Ray& r, Interval ray_t) {
+	std::optional<HitRecord> RenderSystem::hit(ECS& ecs, const Ray& r, Interval ray_t) const {
 		std::optional<HitRecord> closest_hit;
 		auto closest_so_far = ray_t.max;
-		for (const auto& [sphere,material] : view)
+		for (const auto& [sphere, material] : view)
 		{
 			const auto hit = hit_sphere(sphere, r, Interval(ray_t.min, closest_so_far));
 			if (hit.has_value() && hit->t < closest_so_far) {
@@ -105,7 +102,7 @@ namespace render {
 
 
 
-	void RenderSystem::render_pixel(ECS& ecs, const Camera& cam, int x, int y, std::vector<color>& pixel_colors, RNG& rng) {
+	void RenderSystem::render_pixel(ECS& ecs, const Camera& cam, int x, int y, std::vector<color>& pixel_colors, RNG& rng) const {
 		for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
 			Ray r = cam.get_ray(x, y, rng);
 			while (true) {
@@ -143,9 +140,7 @@ namespace render {
 		ProgressBar& bar,
 		int total_blocklines,
 		RNG thread_rng
-	) {
-		// const vec3 direction = random_unit_vector(thread_rng);
-
+	) const {
 		for (int j = j0; j < j1; ++j) {
 			for (int i = i0; i < i1; ++i) {
 				for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
@@ -180,7 +175,7 @@ namespace render {
 
 	}
 
-	std::vector<float> RenderSystem::render_ecs(ECS& ecs, const Camera& cam, RNG& rng) {
+	std::vector<float> RenderSystem::render_ecs(ECS& ecs, const Camera& cam, RNG& rng) const {
 		std::vector<color> pixel_colors(cam.width * cam.height, color(0., 0., 0.));
 
 		ProgressBar bar{

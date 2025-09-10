@@ -53,6 +53,11 @@ public:
         return m_componentArray[m_sparse[entity]];
     }
 
+    const T& getData(Entity entity) const{
+        assert(hasComponent(entity) && "Component not found for entity.");
+        return m_componentArray[m_sparse[entity]];
+    }
+
     void EntityDestroyed(Entity entity) override {
         if (hasComponent(entity)) {
             removeData(entity);
