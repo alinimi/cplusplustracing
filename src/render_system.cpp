@@ -87,7 +87,7 @@ namespace render {
 	std::optional<HitRecord> RenderSystem::hit(const RenderView& view, const Ray& r, Interval ray_t) const {
 		std::optional<HitRecord> closest_hit;
 		auto closest_so_far = ray_t.max;
-		for (const auto& [sphere, material] : view)
+		for (const auto [e, sphere, material] : view)
 		{
 			const auto hit = hit_sphere(sphere, r, Interval(ray_t.min, closest_so_far));
 			if (hit.has_value() && hit->t < closest_so_far) {
