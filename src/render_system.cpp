@@ -1,6 +1,7 @@
 #include "common.h"
 #include <iostream>
 #include <thread>
+#include <tuple>
 #include "ecs/entity.h"
 #include "render_system.h"
 #include "camera.h"
@@ -9,7 +10,7 @@
 
 namespace render {
 
-	std::optional<HitRecord> RenderSystem::hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t) const {
+	std::optional<HitRecord> RenderSystem::hit_sphere(const geom::Sphere& sphere, const Ray& r, geom::Interval ray_t) const {
 		const vec3 current_center = sphere.center + sphere.direction * r.time;
 		const vec3 oc = current_center - r.origin;
 		const auto a = glm::length2(r.direction);
@@ -38,20 +39,20 @@ namespace render {
 	}
 
 	std::optional<Ray> RenderSystem::scatter_lambertian(const Material& mat, const Ray& r, const HitRecord& rec, RNG& rng) const {
-		auto scatter_direction = rec.normal + random_unit_vector(rng);
-		if (near_zero(scatter_direction)) {
+		auto scatter_direction = rec.normal + geom::random_unit_vector(rng);
+		if (geom::near_zero(scatter_direction)) {
 			scatter_direction = rec.normal;
 		}
-		return r.scattered(offset(rec.p, scatter_direction, 1e-3), scatter_direction, r.attenuation * mat.albedo);
+		return r.scattered(geom::offset(rec.p, scatter_direction, 1e-3), scatter_direction, r.attenuation * mat.albedo);
 	}
 
 	std::optional<Ray> RenderSystem::scatter_metallic(const Material& mat, const Ray& r, const HitRecord& rec, RNG& rng) const {
 		vec3 reflected = reflect(r.direction, rec.normal);
-		reflected = glm::normalize(reflected) + (mat.fuzz * random_unit_vector(rng));
+		reflected = glm::normalize(reflected) + (mat.fuzz * geom::random_unit_vector(rng));
 		if (glm::dot(reflected, rec.normal) < 0) {
 			return {};
 		}
-		return r.scattered(offset(rec.p, reflected, 1e-3), reflected, r.attenuation * mat.albedo);
+		return r.scattered(geom::offset(rec.p, reflected, 1e-3), reflected, r.attenuation * mat.albedo);
 	}
 
 	std::optional<Ray> RenderSystem::scatter_dielectric(const Material& mat, const Ray& r, const HitRecord& rec, RNG& rng) const {
@@ -60,13 +61,13 @@ namespace render {
 		const double ri = rec.front_face ? (1.0 / mat.refraction_index) : mat.refraction_index;
 		vec3 direction;
 		vec3 p;
-		if (ri * sin_theta > 1. || reflectance(cos_theta, ri) > rng.random_double()) {
-			direction = reflect(r.direction, rec.normal);
-			p = offset(rec.p, direction, 1e-3);
+		if (ri * sin_theta > 1. || geom::reflectance(cos_theta, ri) > rng.random_double()) {
+			direction = geom::reflect(r.direction, rec.normal);
+			p = geom::offset(rec.p, direction, 1e-3);
 		}
 		else {
-			direction = refract(glm::normalize(r.direction), rec.normal, ri);
-			p = offset(rec.p, direction, 1e-3);//rec.p - rec.normal * 1e-5;
+			direction = geom::refract(glm::normalize(r.direction), rec.normal, ri);
+			p = geom::offset(rec.p, direction, 1e-3);//rec.p - rec.normal * 1e-5;
 		}
 		return r.scattered(p, direction, r.attenuation);//Ray(p,direction,r.attenuation,r.index,0);
 	}
@@ -84,12 +85,12 @@ namespace render {
 	}
 
 
-	std::optional<HitRecord> RenderSystem::hit(const RenderView& view, const Ray& r, Interval ray_t) const {
+	std::optional<HitRecord> RenderSystem::hit(const RenderView& view, const Ray& r, geom::Interval ray_t) const {
 		std::optional<HitRecord> closest_hit;
 		auto closest_so_far = ray_t.max;
 		for (const auto [e, sphere, material] : view)
 		{
-			const auto hit = hit_sphere(sphere, r, Interval(ray_t.min, closest_so_far));
+			const auto hit = hit_sphere(sphere, r, geom::Interval(ray_t.min, closest_so_far));
 			if (hit.has_value() && hit->t < closest_so_far) {
 				closest_hit = hit;
 				closest_hit->mat = material;
@@ -109,9 +110,9 @@ namespace render {
 				if (r.depth < 0) {
 					break;
 				}
-				const std::optional<HitRecord> closest_hit = hit(view, r, Interval(0, infinity));
+				const std::optional<HitRecord> closest_hit = hit(view, r, geom::Interval(0, infinity));
 				if (closest_hit.has_value()) {
-					const vec3 direction = closest_hit->normal + random_unit_vector(rng);
+					const vec3 direction = closest_hit->normal + geom::random_unit_vector(rng);
 					const auto new_ray = scatter(view, r, closest_hit.value(), rng);
 					if (new_ray.has_value()) {
 						r = new_ray.value();
@@ -149,9 +150,9 @@ namespace render {
 						if (r.depth < 0) {
 							break;
 						}
-						const std::optional<HitRecord> closest_hit = hit(view, r, Interval(0, infinity));
+						const std::optional<HitRecord> closest_hit = hit(view, r, geom::Interval(0, infinity));
 						if (closest_hit.has_value()) {
-							const vec3 direction = closest_hit->normal + random_unit_vector(thread_rng);
+							const vec3 direction = closest_hit->normal + geom::random_unit_vector(thread_rng);
 							const auto new_ray = scatter(view, r, closest_hit.value(), thread_rng);
 							if (new_ray.has_value()) {
 								r = new_ray.value();
@@ -193,7 +194,7 @@ namespace render {
 		std::vector<std::thread> threads;
 
 		const int block_width = cam.width;
-		const int block_height = std::ceil(cam.height / 32);
+		const int block_height = std::ceil(cam.height);
 
 		const int total_blocklines = std::ceil(cam.width / float(block_width)) * cam.height;
 		const int total_blocks = std::ceil(cam.width / float(block_width)) * std::ceil(cam.height / float(block_height));
@@ -223,7 +224,7 @@ namespace render {
 			for (int x = 0; x < cam.width; ++x) {
 
 				const color pixel_color = pixel_colors[y * cam.width + x] / double(cam.samples_per_pixel);
-				const Interval intensity(0., 1.);
+				const geom::Interval intensity(0., 1.);
 				const int idx = (y * cam.width + x) * m_channels;
 				//TODO: Avoid this copy, use span?
 				image[idx + 0] = intensity.clamp(pixel_color.x);   // R

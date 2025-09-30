@@ -11,14 +11,15 @@
 
 using namespace indicators;
 
-using RenderView = View<render::Sphere, render::Material>;
 
 
 namespace render {
+    using RenderView = View<geom::Sphere, render::Material>;
+
     class RenderSystem :public System {
     public:
-        std::optional<HitRecord> hit_sphere(const Sphere& sphere, const Ray& r, Interval ray_t) const;
-        std::optional<HitRecord> hit(const RenderView& view, const Ray& r, Interval ray_t) const;
+        std::optional<HitRecord> hit_sphere(const geom::Sphere& sphere, const Ray& r, geom::Interval ray_t) const;
+        std::optional<HitRecord> hit(const RenderView& view, const Ray& r, geom::Interval ray_t) const;
         std::optional<Ray> scatter_lambertian(const Material& mat, const Ray& r, const HitRecord& rec, RNG& rng) const;
         std::optional<Ray> scatter_metallic(const Material& mat, const Ray& r, const HitRecord& rec, RNG& rng) const;
         std::optional<Ray> scatter_dielectric(const Material& mat, const Ray& r, const HitRecord& rec, RNG& rng) const;

@@ -4,6 +4,7 @@
 #include <memory>
 #include <tuple>
 #include "entity.h"
+#include "component.h"
 
 using SystemType = std::uint8_t;
 inline SystemType nextSystemID = 0;
@@ -111,7 +112,7 @@ private:
     }
 
     auto get(Entity e) const {
-        return std::tuple<Cs&...>(std::get<ComponentArray<Cs>*>(storages)->getData(e)...);
+        return std::tuple<Entity, Cs&...>(e, std::get<ComponentArray<Cs>*>(storages)->getData(e)...);
     }
 
 };

@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "geometry/ray.h"
+#include "geometry/geometry.h"
 
 namespace render {
 
@@ -21,7 +22,7 @@ namespace render {
 
         point3 defocus_disk_sample(RNG& rng) const {
             // Returns a random point in the camera defocus disk.
-            auto p = random_in_unit_disk(rng);
+            auto p = geom::random_in_unit_disk(rng);
             return camera_center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
         }
 

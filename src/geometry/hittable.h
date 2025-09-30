@@ -1,10 +1,9 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
-#include "ray.h"
 
-
-namespace render {
+#include "../common.h"
+namespace geom {
     struct Sphere {
         point3 center;
         double radius;

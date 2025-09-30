@@ -4,6 +4,7 @@
 #include <queue>
 #include <array>
 #include <bitset>
+#include <stdexcept>
 
 using Entity = uint32_t;
 using ComponentType = std::uint8_t;
