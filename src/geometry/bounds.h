@@ -10,6 +10,7 @@ namespace geom {
 
     struct Bounds {
         constexpr Bounds() {}
+        constexpr Bounds(AABB wb) : world_bounds(wb) {}
         constexpr Bounds(const vec3& minp, const vec3& maxp) :
             world_bounds({ Interval(minp[0],maxp[0]),Interval(minp[1],maxp[1]),Interval(minp[2],maxp[2]) })
         {
@@ -22,6 +23,17 @@ namespace geom {
                 Interval(b1.world_bounds[2], b2.world_bounds[2])
             };
         }
+        constexpr Bounds padded()
+        {
+            return  {
+                {
+                    Interval(world_bounds[0], world_bounds[0]).expand(1e-5),
+                    Interval(world_bounds[1], world_bounds[1]).expand(1e-5),
+                    Interval(world_bounds[2], world_bounds[2]).expand(1e-5)
+                }
+            };
+        }
+
         AABB world_bounds;
     };
 

@@ -28,7 +28,7 @@ namespace geom {
                 for (int i = start + 1; i < end; i++) {
                     envelope = geom::Bounds(envelope, std::get<1>(leaves[i]).get());
                 }
-                next_node.bounds = envelope;
+                next_node.bounds = envelope.padded();
                 const int node_index = bvh.nodes.size();
                 if (parent != -1) {
                     bvh.nodes[parent].rightChild = node_index;

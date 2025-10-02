@@ -37,7 +37,7 @@ namespace geom {
             return std::clamp<double>(x, min, max);
         }
         constexpr Interval expand(double delta) const {
-            return Interval(min - delta, max + delta);
+            return Interval(min - delta / 2., max + delta / 2.);
         }
         double min, max;
 
