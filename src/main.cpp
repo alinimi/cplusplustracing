@@ -86,54 +86,6 @@ int main() {
     auto& bvhSystem = ecs.registerSystem<geom::BVHSystem>();
     EntityManager entityManager;
 
-
-
-
-    // world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
-    // world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
-
-    // const Entity thirdSphere = ecs.createEntity();
-    // ecs.addComponent(thirdSphere, geom::Sphere{ {0.,0.,-10.}, {1.} });
-    // ecs.addComponent(thirdSphere, render::Material{ {0.7, 0.1, 0.1}, 1. , 0., 0. });
-    // ecs.addComponent(thirdSphere, geom::Bounds{});
-
-    // const Entity secondSphere = ecs.createEntity();
-    // ecs.addComponent(secondSphere, geom::Sphere{ {0.,-100.5,-1.}, {100.} });
-    // ecs.addComponent(secondSphere, render::Material{ {0.4, 0.2, 0.1}, 0., 0. });
-    // ecs.addComponent(secondSphere, geom::Bounds{});
-
-
-    
-
-
-    // const Entity thirdSphere = ecs.createEntity();
-    // ecs.addComponent(thirdSphere, geom::Sphere{ {4., 7., 0.}, {1.} });
-    // ecs.addComponent(thirdSphere, render::Material{ {0.7, 0.6, 0.5}, 1. , 0., 0. });
-    // ecs.addComponent(thirdSphere, geom::Bounds{});
-
-    // const Entity secondSphere = ecs.createEntity();
-    // ecs.addComponent(secondSphere, geom::Sphere{ {-4., 3., 0.}, {1.} });
-    // ecs.addComponent(secondSphere, render::Material{ {0.4, 0.2, 0.1}, 0., 0. });
-    // ecs.addComponent(secondSphere, geom::Bounds{});
-
-
-
-    // const Entity firstSphere = ecs.createEntity();
-    // ecs.addComponent(firstSphere, geom::Sphere{ {0., 1., 0.}, {1.} });
-    // ecs.addComponent(firstSphere, render::Material{ {0.1,0.2,0.5}, 0., 1. ,0.,1.5 });
-    // ecs.addComponent(firstSphere, geom::Bounds{});
-
-
-
-    // const Entity ground = ecs.createEntity();
-    // ecs.addComponent(ground, geom::Sphere{ {0., -1000., 0.}, 1. });
-    // ecs.addComponent(ground, render::Material{ {0.5, 0.5, 0.5}, 0., 0. });
-    // ecs.addComponent(ground, geom::Bounds{});
-
-
-
-
-
     const Entity firstSphere = ecs.createEntity();
     ecs.addComponent(firstSphere, geom::Sphere{ {0., 1., 0.}, {1.} });
     ecs.addComponent(firstSphere, render::Material{ {0.1,0.2,0.5}, 0., 1. ,0.,1.5 });
