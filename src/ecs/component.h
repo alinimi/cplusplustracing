@@ -21,7 +21,7 @@ public:
         m_sparse.fill(INVALID);
     }
 
-    bool hasComponent(Entity entity) {
+    bool hasComponent(Entity entity) const{
         return m_sparse[entity] != INVALID;
     }
 
@@ -107,6 +107,12 @@ public:
     }
 
     template <typename T>
+    const T& getComponent(Entity entity) const{
+        assert(isRegistered<T>() && "Component not registered.");
+        return getComponentArray<T>().getData(entity);
+    }
+
+    template <typename T>
     void addComponent(Entity entity, T component) {
         getComponentArray<T>().insertData(entity, component);
     }
@@ -127,6 +133,13 @@ public:
         assert(isRegistered<T>() && "Component not registered.");
         return *(static_cast<ComponentArray<T>*>(m_componentArrays[getComponentType<T>()].get()));
     }
+
+    template <typename T>
+    const ComponentArray<T>& getComponentArray() const{
+        assert(isRegistered<T>() && "Component not registered.");
+        return *(static_cast<const ComponentArray<T>*>(m_componentArrays[getComponentType<T>()].get()));
+    }
+
 
 private:
     std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> m_componentArrays{}; // Maps component ID to its array

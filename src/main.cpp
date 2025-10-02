@@ -89,36 +89,25 @@ int main() {
 
 
 
-    const Entity thirdSphere = ecs.createEntity();
-    ecs.addComponent(thirdSphere, geom::Sphere{ {4., 7., 0.}, {1.} });
-    ecs.addComponent(thirdSphere, render::Material{ {0.7, 0.6, 0.5}, 1. , 0., 0. });
-    ecs.addComponent(thirdSphere, geom::Bounds{});
+    // world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
+    // world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
 
-    const Entity secondSphere = ecs.createEntity();
-    ecs.addComponent(secondSphere, geom::Sphere{ {-4., 3., 0.}, {1.} });
-    ecs.addComponent(secondSphere, render::Material{ {0.4, 0.2, 0.1}, 0., 0. });
-    ecs.addComponent(secondSphere, geom::Bounds{});
+    // const Entity thirdSphere = ecs.createEntity();
+    // ecs.addComponent(thirdSphere, geom::Sphere{ {0.,0.,-10.}, {1.} });
+    // ecs.addComponent(thirdSphere, render::Material{ {0.7, 0.1, 0.1}, 1. , 0., 0. });
+    // ecs.addComponent(thirdSphere, geom::Bounds{});
 
-
-
-    const Entity firstSphere = ecs.createEntity();
-    ecs.addComponent(firstSphere, geom::Sphere{ {0., 1., 0.}, {1.} });
-    ecs.addComponent(firstSphere, render::Material{ {0.1,0.2,0.5}, 0., 1. ,0.,1.5 });
-    ecs.addComponent(firstSphere, geom::Bounds{});
-
-
-
-    const Entity ground = ecs.createEntity();
-    ecs.addComponent(ground, geom::Sphere{ {0., -1000., 0.}, 1. });
-    ecs.addComponent(ground, render::Material{ {0.5, 0.5, 0.5}, 0., 0. });
-    ecs.addComponent(ground, geom::Bounds{});
+    // const Entity secondSphere = ecs.createEntity();
+    // ecs.addComponent(secondSphere, geom::Sphere{ {0.,-100.5,-1.}, {100.} });
+    // ecs.addComponent(secondSphere, render::Material{ {0.4, 0.2, 0.1}, 0., 0. });
+    // ecs.addComponent(secondSphere, geom::Bounds{});
 
 
     
 
 
     // const Entity thirdSphere = ecs.createEntity();
-    // ecs.addComponent(thirdSphere, geom::Sphere{ {4., 1., 0.}, {1.} });
+    // ecs.addComponent(thirdSphere, geom::Sphere{ {4., 7., 0.}, {1.} });
     // ecs.addComponent(thirdSphere, render::Material{ {0.7, 0.6, 0.5}, 1. , 0., 0. });
     // ecs.addComponent(thirdSphere, geom::Bounds{});
 
@@ -137,46 +126,70 @@ int main() {
 
 
     // const Entity ground = ecs.createEntity();
-    // ecs.addComponent(ground, geom::Sphere{ {0., -1000., 0.}, 1000. });
+    // ecs.addComponent(ground, geom::Sphere{ {0., -1000., 0.}, 1. });
     // ecs.addComponent(ground, render::Material{ {0.5, 0.5, 0.5}, 0., 0. });
     // ecs.addComponent(ground, geom::Bounds{});
 
+
+
+
+
+    const Entity firstSphere = ecs.createEntity();
+    ecs.addComponent(firstSphere, geom::Sphere{ {0., 1., 0.}, {1.} });
+    ecs.addComponent(firstSphere, render::Material{ {0.1,0.2,0.5}, 0., 1. ,0.,1.5 });
+    ecs.addComponent(firstSphere, geom::Bounds{});
+
+    const Entity secondSphere = ecs.createEntity();
+    ecs.addComponent(secondSphere, geom::Sphere{ {-4., 1., 0.}, {1.} });
+    ecs.addComponent(secondSphere, render::Material{ {0.4, 0.2, 0.1}, 0., 0. });
+    ecs.addComponent(secondSphere, geom::Bounds{});
+
+    const Entity thirdSphere = ecs.createEntity();
+    ecs.addComponent(thirdSphere, geom::Sphere{ {4., 1., 0.}, {1.} });
+    ecs.addComponent(thirdSphere, render::Material{ {0.7, 0.6, 0.5}, 1. , 0., 0. });
+    ecs.addComponent(thirdSphere, geom::Bounds{});
+
+    const Entity ground = ecs.createEntity();
+    ecs.addComponent(ground, geom::Sphere{ {0., -1000., 0.}, 1000. });
+    ecs.addComponent(ground, render::Material{ {0.5, 0.5, 0.5}, 0., 0. });
+    ecs.addComponent(ground, geom::Bounds{});
+
     RNG rng = RNG(3);
 
-    // for (int a = -11; a < 11; a++) {
-    //     for (int b = -11; b < 11; b++) {
-    //         auto choose_mat = rng.random_double();
-    //         point3 center(a + 0.9 * rng.random_double(), 0.2, b + 0.9 * rng.random_double());
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = rng.random_double();
+            point3 center(a + 0.9 * rng.random_double(), 0.2, b + 0.9 * rng.random_double());
 
-    //         const Entity sphere = ecs.createEntity();
+            const Entity sphere = ecs.createEntity();
 
-    //         if ((center - point3(4, 0.2, 0)).length() > 0.9) {
+            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
 
-    //             if (choose_mat < 0.8) {
-    //                 // diffuse
-    //                 const color albedo = geom::random_vec3(rng) * geom::random_vec3(rng);
-    //                 const auto direction = vec3(0, rng.random_double(0, .5), 0);
-    //                 ecs.addComponent(sphere, geom::Sphere{ center, 0.2 , direction });
-    //                 ecs.addComponent(sphere, render::Material{ albedo, 0. , 0. });
-    //                 ecs.addComponent(sphere, geom::Bounds{});
-    //             }
-    //             else if (choose_mat < 0.95) {
-    //                 // metal
-    //                 const color albedo = geom::random_vec3(rng);
-    //                 const auto fuzz = rng.random_double(0, 0.5);
-    //                 ecs.addComponent(sphere, geom::Sphere{ center, 0.2 });
-    //                 ecs.addComponent(sphere, render::Material{ albedo, 1. , 0., fuzz });
-    //                 ecs.addComponent(sphere, geom::Bounds{});
-    //             }
-    //             else {
-    //                 // glass
-    //                 ecs.addComponent(sphere, geom::Sphere{ center, 0.2 });
-    //                 ecs.addComponent(sphere, render::Material{ {0.0, 0.0, 0.0}, 0., 1., 0.,1.5 });
-    //                 ecs.addComponent(sphere, geom::Bounds{});
-    //             }
-    //         }
-    //     }
-    // }
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    const color albedo = geom::random_vec3(rng) * geom::random_vec3(rng);
+                    const auto direction = vec3(0, rng.random_double(0, .5), 0);
+                    ecs.addComponent(sphere, geom::Sphere{ center, 0.2 , direction });
+                    ecs.addComponent(sphere, render::Material{ albedo, 0. , 0. });
+                    ecs.addComponent(sphere, geom::Bounds{});
+                }
+                else if (choose_mat < 0.95) {
+                    // metal
+                    const color albedo = geom::random_vec3(rng);
+                    const auto fuzz = rng.random_double(0, 0.5);
+                    ecs.addComponent(sphere, geom::Sphere{ center, 0.2 });
+                    ecs.addComponent(sphere, render::Material{ albedo, 1. , 0., fuzz });
+                    ecs.addComponent(sphere, geom::Bounds{});
+                }
+                else {
+                    // glass
+                    ecs.addComponent(sphere, geom::Sphere{ center, 0.2 });
+                    ecs.addComponent(sphere, render::Material{ {0.0, 0.0, 0.0}, 0., 1., 0.,1.5 });
+                    ecs.addComponent(sphere, geom::Bounds{});
+                }
+            }
+        }
+    }
 
 
     const int channels = 3; // RGB
@@ -184,26 +197,24 @@ int main() {
     render::Camera cam = create_camera();
 
     // TODO: implement view cache invalidation, probably via registration in the ecs
-    render::RenderView render_view{
-            ecs.getComponentArray<geom::Sphere>(),
-            ecs.getComponentArray<render::Material>()
-    };
-
     geom::BoundsView bounds_view{
             ecs.getComponentArray<geom::Sphere>(),
             ecs.getComponentArray<geom::Bounds>()
     };
 
-    geom::BVHView bvh_view{
+    render::RenderBVHView bvh_view{
+            ecs.getComponentArray<geom::Sphere>(),
+            ecs.getComponentArray<render::Material>(),
             ecs.getComponentArray<geom::Bounds>()
     };
 
     boundsSystem.update_bounds(bounds_view);
-    bvhSystem.build(bvh_view, rng);
+    auto bvh = bvhSystem.build(bvh_view, rng);
 
     auto t1 = std::chrono::high_resolution_clock::now();
     const auto image = renderSystem.render_ecs(
-        render_view,
+        ecs,
+        bvh,
         cam,
         rng
     );

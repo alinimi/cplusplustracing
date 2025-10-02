@@ -38,6 +38,22 @@ namespace render {
 		return HitRecord{ rec_t,point,(point - current_center) / sphere.radius,r };
 	}
 
+	std::optional<HitRecord> RenderSystem::hit(const ECS& ecs, const geom::BVH& bvh, const Ray& r, geom::Interval ray_t) const {
+		auto candidates = bvh.intersect(r, ray_t);
+		std::optional<HitRecord> closest_hit;
+		auto closest_so_far = ray_t.max;
+		for (const auto e: candidates)
+		{
+			const auto hit = hit_sphere(ecs.getComponent<geom::Sphere>(e), r, geom::Interval(ray_t.min, closest_so_far));
+			if (hit.has_value() && hit->t < closest_so_far) {
+				closest_hit = hit;
+				closest_hit->mat = ecs.getComponent<render::Material>(e);
+				closest_so_far = hit->t;
+			}
+		}
+		return closest_hit;
+	}
+
 	std::optional<Ray> RenderSystem::scatter_lambertian(const Material& mat, const Ray& r, const HitRecord& rec, RNG& rng) const {
 		auto scatter_direction = rec.normal + geom::random_unit_vector(rng);
 		if (geom::near_zero(scatter_direction)) {
@@ -72,7 +88,7 @@ namespace render {
 		return r.scattered(p, direction, r.attenuation);//Ray(p,direction,r.attenuation,r.index,0);
 	}
 
-	std::optional<Ray> RenderSystem::scatter(const RenderView& view, const Ray& r, const HitRecord& rec, RNG& rng) const {
+	std::optional<Ray> RenderSystem::scatter(const ECS& ecs, const Ray& r, const HitRecord& rec, RNG& rng) const {
 		const double t = rng.random_double();
 		const double s = rng.random_double();
 		if (t > rec.mat.metallic) {
@@ -84,36 +100,18 @@ namespace render {
 		return scatter_metallic(rec.mat, r, rec, rng);
 	}
 
-
-	std::optional<HitRecord> RenderSystem::hit(const RenderView& view, const Ray& r, geom::Interval ray_t) const {
-		std::optional<HitRecord> closest_hit;
-		auto closest_so_far = ray_t.max;
-		for (const auto [e, sphere, material] : view)
-		{
-			const auto hit = hit_sphere(sphere, r, geom::Interval(ray_t.min, closest_so_far));
-			if (hit.has_value() && hit->t < closest_so_far) {
-				closest_hit = hit;
-				closest_hit->mat = material;
-				closest_so_far = hit->t;
-			}
-		}
-		return closest_hit;
-
-	}
-
-
-
-	void RenderSystem::render_pixel(const RenderView& view, const Camera& cam, int x, int y, std::vector<color>& pixel_colors, RNG& rng) const {
+	void RenderSystem::render_pixel(const ECS& ecs, const geom::BVH& bvh,
+		const Camera& cam, int x, int y, std::vector<color>& pixel_colors, RNG& rng) const {
 		for (int sample = 0; sample < cam.samples_per_pixel; ++sample) {
 			Ray r = cam.get_ray(x, y, rng);
 			while (true) {
 				if (r.depth < 0) {
 					break;
 				}
-				const std::optional<HitRecord> closest_hit = hit(view, r, geom::Interval(0, infinity));
+				const std::optional<HitRecord> closest_hit = hit(ecs, bvh, r, geom::Interval(0, infinity));
 				if (closest_hit.has_value()) {
 					const vec3 direction = closest_hit->normal + geom::random_unit_vector(rng);
-					const auto new_ray = scatter(view, r, closest_hit.value(), rng);
+					const auto new_ray = scatter(ecs, r, closest_hit.value(), rng);
 					if (new_ray.has_value()) {
 						r = new_ray.value();
 					}
@@ -134,7 +132,8 @@ namespace render {
 
 
 	void RenderSystem::render_tile(int i0, int i1, int j0, int j1,
-		const RenderView& view,
+		const ECS& ecs,
+		const geom::BVH& bvh,
 		const Camera& cam,
 		std::vector<color>& pixel_colors,
 		std::atomic<int>& finished_blocklines,
@@ -150,10 +149,10 @@ namespace render {
 						if (r.depth < 0) {
 							break;
 						}
-						const std::optional<HitRecord> closest_hit = hit(view, r, geom::Interval(0, infinity));
+						const std::optional<HitRecord> closest_hit = hit(ecs, bvh, r, geom::Interval(0, infinity));
 						if (closest_hit.has_value()) {
 							const vec3 direction = closest_hit->normal + geom::random_unit_vector(thread_rng);
-							const auto new_ray = scatter(view, r, closest_hit.value(), thread_rng);
+							const auto new_ray = scatter(ecs, r, closest_hit.value(), thread_rng);
 							if (new_ray.has_value()) {
 								r = new_ray.value();
 							}
@@ -176,7 +175,7 @@ namespace render {
 
 	}
 
-	std::vector<float> RenderSystem::render_ecs(const RenderView& view, const Camera& cam, RNG& rng) const {
+	std::vector<float> RenderSystem::render_ecs(const ECS& ecs, const geom::BVH& bvh, const Camera& cam, RNG& rng) const {
 		std::vector<color> pixel_colors(cam.width * cam.height, color(0., 0., 0.));
 
 		ProgressBar bar{
@@ -194,7 +193,7 @@ namespace render {
 		std::vector<std::thread> threads;
 
 		const int block_width = cam.width;
-		const int block_height = std::ceil(cam.height);
+		const int block_height = std::ceil(cam.height / 32);
 
 		const int total_blocklines = std::ceil(cam.width / float(block_width)) * cam.height;
 		const int total_blocks = std::ceil(cam.width / float(block_width)) * std::ceil(cam.height / float(block_height));
@@ -206,7 +205,8 @@ namespace render {
 					&RenderSystem::render_tile,
 					this,
 					i0, i1, j0, j1,
-					std::cref(view),
+					std::cref(ecs),
+					std::cref(bvh),
 					std::cref(cam),
 					std::ref(pixel_colors),
 					std::ref(finished_blocklines),
